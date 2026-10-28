@@ -1,0 +1,30 @@
+# Xcode & macOS
+.DS_Store
+*/.DS_Store
+*.swp
+*~.nib
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+
+# Generated Xcode Project (managed via XcodeGen project.yml)
+*.xcodeproj
+*.xcworkspace
+
+# TrollStore Packages & Archives
+Payload/
+*.ipa
+*.tipa
+*.zip

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+		TrollStore Sandboxing Configuration:
+		- Set to 'false' (default): Runs within standard iOS application sandbox container.
+		  Files are stored in the app's Documents directory, accessible via iOS Files app
+		  with UIFileSharingEnabled and LSSupportsOpeningDocumentsInPlace.
+		- Set to 'true': Bypasses sandbox (TrollStore privilege). Enables reading/writing anywhere
+		  on the iOS root filesystem (e.g., /var/mobile, /, etc.).
+	-->
+	<key>com.apple.private.security.no-sandbox</key>
+	<false/>
+
+	<!-- Grants TrollStore app access to AppData containers -->
+	<key>com.apple.private.security.storage.AppDataContainers</key>
+	<true/>
+</dict>
+</plist>

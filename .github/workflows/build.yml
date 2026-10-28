@@ -1,0 +1,66 @@
+name: Build TrollDocs (TrollStore)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Package TrollDocs (iOS 15.0+)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Toolchain (XcodeGen & ldid)
+        run: |
+          brew install xcodegen ldid
+
+      - name: Generate Xcode Project with XcodeGen
+        run: |
+          xcodegen generate
+
+      - name: Build Application for Generic iOS Device
+        run: |
+          xcodebuild build \
+            -project TrollDocs.xcodeproj \
+            -scheme TrollDocs \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Fake-sign with TrollStore Entitlements using ldid
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/TrollDocs.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Error: Built app bundle not found at $APP_PATH"
+            exit 1
+          fi
+
+          echo "Applying TrollStore entitlements to $APP_PATH/TrollDocs"
+          ldid -SResources/TrollDocs.entitlements "$APP_PATH/TrollDocs"
+
+      - name: Package Payload into IPA and TIPA
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/TrollDocs.app"
+          rm -rf Payload TrollDocs.ipa TrollDocs.tipa
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r9 TrollDocs.ipa Payload
+          cp TrollDocs.ipa TrollDocs.tipa
+
+      - name: Upload IPA & TIPA Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrollDocs-TrollStore
+          path: |
+            TrollDocs.ipa
+            TrollDocs.tipa
+          if-no-files-found: error
