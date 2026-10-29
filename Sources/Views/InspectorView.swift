@@ -24,17 +24,12 @@ struct InspectorView: View {
                             .lineSpacing(3)
                             .padding(.top, 6)
 
-                        if document.format.supportsPageLayout {
-                            pageSection
-                                .padding(.top, 28)
-                            typeSection
-                                .padding(.top, 30)
-                            runningSection
-                                .padding(.top, 30)
-                        } else {
-                            plainTextNotice
-                                .padding(.top, 28)
-                        }
+                        pageSection
+                            .padding(.top, 28)
+                        typeSection
+                            .padding(.top, 30)
+                        runningSection
+                            .padding(.top, 30)
 
                         detailsSection
                             .padding(.top, 30)
@@ -307,17 +302,6 @@ struct InspectorView: View {
                     .truncationMode(.middle)
             }
             .padding(.top, 8)
-        }
-    }
-
-    private var plainTextNotice: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(title: "Format")
-            Text("This format carries text only. Typography and page measures apply to PDF documents.")
-                .font(Theme.sans(12.5))
-                .foregroundColor(Theme.inkSecondary)
-                .lineSpacing(4)
-                .padding(.top, 8)
         }
     }
 

@@ -1,4 +1,4 @@
-﻿import Foundation
+import Foundation
 import Combine
 
 enum DocumentStoreError: LocalizedError {
@@ -76,7 +76,7 @@ final class DocumentStore: ObservableObject {
 
     // MARK: - Writing
 
-    func create(format: DocumentFormat) -> Document {
+    func create(format: DocumentFormat = .pdf) -> Document {
         let document = Document(format: format)
         save(document)
         return documents.first { $0.id == document.id } ?? document

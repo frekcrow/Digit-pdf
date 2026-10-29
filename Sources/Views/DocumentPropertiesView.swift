@@ -36,15 +36,11 @@ struct DocumentPropertiesView: View {
                     if !document.author.isEmpty {
                         infoRow(title: "Author", value: document.author)
                     }
-                    infoRow(title: "Format Category", value: document.format.categoryTitle)
-                    infoRow(title: "Target Extension", value: ".\(document.format.fileExtension)")
+                    infoRow(title: "Format", value: "Adobe PDF (.pdf)")
                 }
 
                 // Section 2: Storage & File System
                 Section(header: Text("STORAGE & PATHS").font(Theme.mono(9, weight: .bold))) {
-                    let internalURL = store.libraryDirectory.appendingPathComponent("\(document.id.uuidString).tdoc")
-                    let exportURL = store.documentsDirectory.appendingPathComponent(document.fileName)
-
                     infoRow(title: "Export Location", value: "Documents/\(document.fileName)")
                     infoRow(title: "Storage ID", value: document.id.uuidString)
 
@@ -61,17 +57,10 @@ struct DocumentPropertiesView: View {
 
                 // Section 3: Content Metrics
                 Section(header: Text("CONTENT METRICS").font(Theme.mono(9, weight: .bold))) {
-                    if document.format.isSpreadsheet {
-                        infoRow(title: "Table Dimensions", value: "\(document.spreadsheetData.rowCount) rows × \(document.spreadsheetData.columnCount) columns")
-                        infoRow(title: "Total Cells", value: "\(document.spreadsheetData.rowCount * document.spreadsheetData.columnCount)")
-                    } else if document.format.isPresentation {
-                        infoRow(title: "Total Slides", value: "\(document.presentationDeck.slideCount)")
-                        infoRow(title: "Current Theme", value: document.presentationDeck.currentSlide.theme.rawValue)
-                    } else {
-                        infoRow(title: "Word Count", value: "\(document.wordCount) words")
-                        infoRow(title: "Paragraphs", value: "\(document.content.paragraphs.count)")
-                        infoRow(title: "Page Preset", value: "\(document.page.size.title) (\(document.page.orientation.title))")
-                    }
+                    infoRow(title: "Word Count", value: "\(document.wordCount) words")
+                    infoRow(title: "Paragraphs", value: "\(document.content.paragraphs.count)")
+                    infoRow(title: "Page Preset", value: "\(document.page.size.title) (\(document.page.orientation.title))")
+                    infoRow(title: "Margins", value: document.page.marginDetail)
                 }
 
                 // Section 4: Timestamps

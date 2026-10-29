@@ -27,14 +27,8 @@ struct EditorView: View {
 
             VStack(spacing: 0) {
                 topBar
-                if model.document.format.isSpreadsheet {
-                    SpreadsheetEditorView(document: $model.document, onSave: { model.flush() })
-                } else if model.document.format.isPresentation {
-                    PresentationEditorView(document: $model.document, onSave: { model.flush() })
-                } else {
-                    manuscript
-                    bottomBar
-                }
+                manuscript
+                bottomBar
             }
         }
         .sheet(item: $activeSheet) { sheet in
@@ -90,24 +84,22 @@ struct EditorView: View {
 
                 Spacer()
 
-                Text(model.document.format.abbreviation)
+                Text("PDF")
                     .font(Theme.mono(8.5, weight: .semibold))
                     .tracking(1.7)
                     .foregroundColor(Theme.accent)
 
                 Spacer()
 
-                if model.document.format == .pdf {
-                    Button {
-                        openPreview()
-                    } label: {
-                        Image(systemName: "doc.text.magnifyingglass")
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(Theme.inkSecondary)
-                            .frame(width: 34, height: 34)
-                    }
-                    .buttonStyle(QuietButtonStyle())
+                Button {
+                    openPreview()
+                } label: {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(Theme.inkSecondary)
+                        .frame(width: 34, height: 34)
                 }
+                .buttonStyle(QuietButtonStyle())
 
                 menu
             }
@@ -141,26 +133,22 @@ struct EditorView: View {
                 Label("Properties (Get Info)", systemImage: "info.circle")
             }
 
-            if model.document.format.supportsPageLayout {
-                Button {
-                    activeSheet = .inspector
-                } label: {
-                    Label("Page & Type", systemImage: "textformat.size")
-                }
+            Button {
+                activeSheet = .inspector
+            } label: {
+                Label("Page & Type Inspector", systemImage: "textformat.size")
             }
 
-            if model.document.format == .pdf {
-                Button {
-                    openPDFStudio()
-                } label: {
-                    Label("PDF Studio & Search", systemImage: "doc.viewfinder")
-                }
+            Button {
+                openPDFStudio()
+            } label: {
+                Label("PDF Studio & Search", systemImage: "doc.viewfinder")
+            }
 
-                Button {
-                    openPreview()
-                } label: {
-                    Label("Preview Page", systemImage: "doc.text.magnifyingglass")
-                }
+            Button {
+                openPreview()
+            } label: {
+                Label("Preview Page", systemImage: "doc.text.magnifyingglass")
             }
 
             Divider()
@@ -219,10 +207,8 @@ struct EditorView: View {
                         )
 
                         if model.document.content.isEmpty {
-                            Text(model.document.format.bodyPlaceholder)
-                                .font(model.document.format == .csv
-                                      ? Theme.mono(editorBaseSize)
-                                      : Theme.serif(editorBaseSize))
+                            Text("Begin writing. Headings, quotes, and body text are composed into PDF pages with desktop typography.")
+                                .font(Theme.serif(16))
                                 .foregroundColor(Theme.inkTertiary)
                                 .lineSpacing(4)
                                 .allowsHitTesting(false)
@@ -251,32 +237,22 @@ struct EditorView: View {
 
     private var headerFields: some View {
         VStack(alignment: .leading, spacing: 4) {
-            TextField("Untitled", text: $model.document.title)
+            TextField("Untitled Document", text: $model.document.title)
                 .font(Theme.serif(28))
                 .foregroundColor(Theme.ink)
                 .textFieldStyle(PlainTextFieldStyle())
                 .disableAutocorrection(true)
                 .focused($titleFocused)
 
-            if model.document.format.supportsRichText || model.document.format == .txt {
-                TextField("Subtitle", text: $model.document.subtitle)
-                    .font(Theme.serif(13).italic())
-                    .foregroundColor(Theme.inkSecondary)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .disableAutocorrection(true)
-                    .padding(.top, 1)
-            }
+            TextField("Subtitle or Author", text: $model.document.subtitle)
+                .font(Theme.serif(13).italic())
+                .foregroundColor(Theme.inkSecondary)
+                .textFieldStyle(PlainTextFieldStyle())
+                .disableAutocorrection(true)
+                .padding(.top, 1)
 
             Hairline(color: Theme.ruleStrong)
                 .padding(.top, 12)
-
-            if let hint = formatHint {
-                Text(hint.uppercased())
-                    .font(Theme.mono(7.5))
-                    .tracking(1.2)
-                    .foregroundColor(Theme.inkTertiary)
-                    .padding(.top, 9)
-            }
         }
         .padding(.bottom, 14)
     }
@@ -287,9 +263,7 @@ struct EditorView: View {
         VStack(spacing: 0) {
             Hairline()
 
-            if model.document.format.supportsRichText {
-                richToolRow
-            }
+            richToolRow
 
             Button {
                 activeSheet = .inspector
@@ -302,7 +276,7 @@ struct EditorView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Spacer(minLength: 8)
-                    Text("SETUP")
+                    Text("PAGE SETUP")
                         .font(Theme.sans(8.5, weight: .semibold))
                         .tracking(1.4)
                         .foregroundColor(Theme.accent)
@@ -402,49 +376,17 @@ struct EditorView: View {
 
     // MARK: - Derived
 
-    private var editorBaseSize: CGFloat {
-        model.document.format == .csv ? 14 : 16
-    }
+    private var editorBaseSize: CGFloat { 16 }
 
     private var editorTypography: TypographySettings {
-        var settings = model.document.typography
-        if model.document.format == .csv {
-            settings.typeface = .menlo
-            settings.bodySize = 14
-            settings.leading = 1.55
-            settings.alignment = .left
-            settings.paragraphSpacing = 2
-            settings.firstLineIndent = 0
-        }
-        return settings
-    }
-
-    private var formatHint: String? {
-        switch model.document.format {
-        case .csv:
-            return "One row per line / columns separated by commas"
-        case .txt:
-            return "Plain text / styling is not written to the file"
-        default:
-            return nil
-        }
+        model.document.typography
     }
 
     private var metricsLine: String {
-        switch model.document.format {
-        case .pdf:
-            let size = model.document.page.size.title.uppercased()
-            let margin = model.document.page.marginDetail.uppercased()
-            return "\(size) / \(margin) / \(model.document.wordCount) WORDS"
-        case .csv:
-            let rows = model.document.content.plainText
-                .components(separatedBy: .newlines)
-                .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-                .count
-            return "\(rows) ROWS / COMMA SEPARATED"
-        default:
-            return "\(model.document.wordCount) WORDS / PLAIN TEXT"
-        }
+        let size = model.document.page.size.title.uppercased()
+        let orientation = model.document.page.orientation.title.uppercased()
+        let margin = model.document.page.marginDetail.uppercased()
+        return "\(size) • \(orientation) / \(margin) / \(model.document.wordCount) WORDS"
     }
 
     // MARK: - Actions

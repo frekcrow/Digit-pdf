@@ -2,20 +2,12 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
-/// SwiftUI wrapper for UIDocumentPickerViewController to import desktop office files into TrollDocs.
+/// SwiftUI wrapper for UIDocumentPickerViewController to import PDF files into TrollDocs.
 struct DocumentPickerView: UIViewControllerRepresentable {
     var onDocumentPicked: (URL) -> Void
 
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        let contentTypes: [UTType] = [
-            .pdf,
-            .text,
-            .plainText,
-            .commaSeparatedText,
-            .tabSeparatedText,
-            .data,
-            .item
-        ]
+        let contentTypes: [UTType] = [.pdf]
 
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes, asCopy: true)
         picker.delegate = context.coordinator

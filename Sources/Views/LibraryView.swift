@@ -1,14 +1,13 @@
 import SwiftUI
+import PDFKit
 
-// MARK: - Library
+// MARK: - Library View (Exclusively PDF)
 
 struct LibraryView: View {
     @EnvironmentObject private var store: DocumentStore
 
     @State private var searchText = ""
-    @State private var selectedFormat: DocumentFormat?
     @State private var showingSearch = false
-    @State private var showingNewDocument = false
     @State private var showingImportPicker = false
     @State private var inspectingDocument: Document?
     @State private var renamingDocument: Document?
@@ -16,7 +15,6 @@ struct LibraryView: View {
     @State private var showingRenameAlert = false
     @State private var sharingURLWrapper: ShareURLWrapper?
     @State private var editingDocument: Document?
-    @State private var pendingDocument: Document?
     @FocusState private var searchFocused: Bool
 
     var body: some View {
@@ -26,12 +24,6 @@ struct LibraryView: View {
             VStack(spacing: 0) {
                 masthead
                 content
-            }
-        }
-        .sheet(isPresented: $showingNewDocument, onDismiss: openPendingDocument) {
-            NewDocumentSheet { format in
-                pendingDocument = store.create(format: format)
-                showingNewDocument = false
             }
         }
         .sheet(isPresented: $showingImportPicker) {
@@ -75,7 +67,7 @@ struct LibraryView: View {
                 renamingDocument = nil
             }
         } message: {
-            Text("Enter a new title for this document.")
+            Text("Enter a new title for this PDF document.")
         }
         .fullScreenCover(item: $editingDocument) { document in
             EditorView(document: document, store: store)
@@ -83,13 +75,13 @@ struct LibraryView: View {
         }
     }
 
-    // MARK: Masthead
+    // MARK: - Masthead
 
     private var masthead: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
-                Text("TROLLDOCS")
-                    .font(Theme.mono(9.5, weight: .medium))
+                Text("TROLLDOCS PDF")
+                    .font(Theme.mono(9.5, weight: .bold))
                     .tracking(2.6)
                     .foregroundColor(Theme.accent)
 
@@ -125,12 +117,12 @@ struct LibraryView: View {
                 .buttonStyle(QuietButtonStyle())
 
                 Button {
-                    showingNewDocument = true
+                    createNewPDFDocument()
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "plus")
                             .font(.system(size: 9, weight: .semibold))
-                        Text("NEW")
+                        Text("NEW PDF")
                             .font(Theme.sans(9.5, weight: .semibold))
                             .tracking(1.6)
                     }
@@ -146,8 +138,8 @@ struct LibraryView: View {
             .padding(.top, 8)
 
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text("Documents")
-                    .font(Theme.serif(36))
+                Text("PDF Documents")
+                    .font(Theme.serif(34))
                     .foregroundColor(Theme.ink)
                 Text("\(store.documents.count)")
                     .font(Theme.serif(14))
@@ -155,13 +147,13 @@ struct LibraryView: View {
                     .foregroundColor(Theme.inkTertiary)
                 Spacer()
             }
-            .padding(.top, 0)
+            .padding(.top, 4)
 
             Text(summaryLine)
                 .font(Theme.mono(8.5))
                 .tracking(1.3)
                 .foregroundColor(Theme.inkTertiary)
-                .padding(.top, 5)
+                .padding(.top, 4)
 
             if showingSearch {
                 searchField
@@ -169,20 +161,16 @@ struct LibraryView: View {
             }
 
             Hairline(color: Theme.ruleStrong)
-                .padding(.top, 16)
-
-            filterTabs
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.top, 14)
         }
         .padding(.horizontal, Theme.gutter)
     }
 
     private var summaryLine: String {
         let documents = store.documents.count
-        if documents == 0 { return "NO DOCUMENTS YET" }
+        if documents == 0 { return "NO PDF DOCUMENTS YET" }
         let words = store.totalWordCount
-        return "\(documents) \(documents == 1 ? "DOCUMENT" : "DOCUMENTS") / \(words) \(words == 1 ? "WORD" : "WORDS")"
+        return "\(documents) \(documents == 1 ? "DOCUMENT" : "DOCUMENTS") • \(words) WORDS TOTAL"
     }
 
     private var searchField: some View {
@@ -192,7 +180,7 @@ struct LibraryView: View {
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(Theme.inkTertiary)
 
-                TextField("Search titles", text: $searchText)
+                TextField("Search titles and authors...", text: $searchText)
                     .font(Theme.serif(15))
                     .foregroundColor(Theme.ink)
                     .textInputAutocapitalization(.never)
@@ -214,78 +202,38 @@ struct LibraryView: View {
         }
     }
 
-    private var filterTabs: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 20) {
-                filterTab(title: "All", count: store.documents.count, format: nil)
-                ForEach(DocumentFormat.creatable) { format in
-                    filterTab(
-                        title: format.abbreviation,
-                        count: store.documents.filter { $0.format == format }.count,
-                        format: format
-                    )
-                }
-            }
-        }
-    }
+    // MARK: - Content
 
-    private func filterTab(title: String, count: Int, format: DocumentFormat?) -> some View {
-        let selected = selectedFormat == format
-        return Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
-                selectedFormat = format
-            }
-        } label: {
-            VStack(spacing: 6) {
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(title.uppercased())
-                        .font(Theme.sans(9.5, weight: selected ? .semibold : .regular))
-                        .tracking(1.6)
-                        .foregroundColor(selected ? Theme.ink : Theme.inkTertiary)
-                    Text("\(count)")
-                        .font(Theme.mono(8))
-                        .foregroundColor(selected ? Theme.accent : Theme.inkTertiary)
-                }
-                Rectangle()
-                    .fill(selected ? Theme.accent : Color.clear)
-                    .frame(height: 1.5)
-            }
-        }
-        .buttonStyle(QuietButtonStyle())
-    }
-
-    // MARK: Content
-
-    @ViewBuilder
     private var content: some View {
-        if store.documents.isEmpty {
-            emptyLibrary
-        } else if filteredDocuments.isEmpty {
-            emptySearch
-        } else {
-            documentList
+        Group {
+            if store.documents.isEmpty {
+                emptyLibrary
+            } else if filteredDocuments.isEmpty {
+                emptySearch
+            } else {
+                documentList
+            }
         }
     }
 
     private var filteredDocuments: [Document] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return store.documents.filter { document in
-            if let format = selectedFormat, document.format != format {
-                return false
-            }
-            guard !query.isEmpty else { return true }
-            return document.displayTitle.lowercased().contains(query)
-                || document.displaySubtitle.lowercased().contains(query)
-                || document.format.abbreviation.lowercased().contains(query)
+        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return store.documents
+        }
+        return store.documents.filter { doc in
+            doc.title.localizedCaseInsensitiveContains(trimmed) ||
+            doc.subtitle.localizedCaseInsensitiveContains(trimmed) ||
+            doc.author.localizedCaseInsensitiveContains(trimmed)
         }
     }
 
     private var sections: [LibrarySection] {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
+        formatter.dateFormat = "LLLL yyyy"
 
-        var order: [String] = []
         var buckets: [String: [Document]] = [:]
+        var order: [String] = []
 
         for document in filteredDocuments {
             let key = formatter.string(from: document.updatedAt)
@@ -361,7 +309,7 @@ struct LibraryView: View {
                                     sharingURLWrapper = ShareURLWrapper(url: url)
                                 }
                             } label: {
-                                Label("Export & Share", systemImage: "square.and.arrow.up")
+                                Label("Export & Share PDF", systemImage: "square.and.arrow.up")
                             }
 
                             Divider()
@@ -384,57 +332,67 @@ struct LibraryView: View {
     private func sectionHeader(_ title: String) -> some View {
         HStack {
             Text(title.uppercased())
-                .font(Theme.sans(8.5, weight: .semibold))
-                .tracking(1.9)
+                .font(Theme.mono(8.5, weight: .bold))
+                .tracking(1.4)
                 .foregroundColor(Theme.inkTertiary)
             Spacer()
         }
+        .padding(.horizontal, Theme.gutter)
         .padding(.top, 18)
         .padding(.bottom, 6)
         .background(Theme.paper)
-        .listRowInsets(EdgeInsets(top: 0, leading: Theme.gutter, bottom: 0, trailing: Theme.gutter))
     }
+
+    // MARK: - Empty States
 
     private var emptyLibrary: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 30)
+            Spacer()
 
-            ZStack {
-                Rectangle()
-                    .stroke(Theme.ruleStrong, lineWidth: Theme.hairline)
-                    .frame(width: 64, height: 86)
-                Text("¶")
-                    .font(Theme.serif(25))
-                    .foregroundColor(Theme.inkTertiary)
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(Theme.accentWash)
+                        .frame(width: 80, height: 80)
+
+                    Image(systemName: "doc.richtext")
+                        .font(.system(size: 36, weight: .light))
+                        .foregroundColor(Theme.accent)
+                }
+
+                Text("No PDF Documents")
+                    .font(Theme.serif(28))
+                    .foregroundColor(Theme.ink)
+
+                Text("Create a new typeset PDF with desktop typography, or import existing PDF files to read and annotate.")
+                    .font(Theme.sans(13))
+                    .foregroundColor(Theme.inkSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.horizontal, 30)
+
+                Button {
+                    createNewPDFDocument()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "plus")
+                        Text("Create First PDF")
+                    }
+                    .font(Theme.sans(11, weight: .semibold))
+                    .tracking(1.4)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 12)
+                    .background(Theme.accent)
+                    .clipShape(Capsule())
+                }
+                .padding(.top, 8)
             }
 
-            Text("The library is empty.")
-                .font(Theme.serif(24))
-                .foregroundColor(Theme.ink)
-                .padding(.top, 26)
-
-            Text("Every document begins as a blank page.\nChoose a format, then set the type.")
-                .font(Theme.sans(12.5))
-                .foregroundColor(Theme.inkSecondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .padding(.top, 10)
-
-            Button {
-                showingNewDocument = true
-            } label: {
-                Text("Compose a Document")
-                    .font(Theme.sans(10, weight: .semibold))
-                    .tracking(1.6)
-                    .foregroundColor(Theme.paper)
-            }
-            .buttonStyle(InkButtonStyle(filled: true))
-            .padding(.top, 26)
-
-            Spacer(minLength: 30)
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 30)
     }
 
     private var emptySearch: some View {
@@ -445,7 +403,7 @@ struct LibraryView: View {
                 .font(Theme.serif(24))
                 .foregroundColor(Theme.ink)
 
-            Text("Try another title, or clear the filters to see the whole library.")
+            Text("Try another title or author, or clear the search to see all documents.")
                 .font(Theme.sans(12.5))
                 .foregroundColor(Theme.inkSecondary)
                 .multilineTextAlignment(.center)
@@ -455,9 +413,8 @@ struct LibraryView: View {
 
             Button {
                 searchText = ""
-                selectedFormat = nil
             } label: {
-                Text("Clear Filters")
+                Text("Clear Search")
                     .font(Theme.sans(10, weight: .semibold))
                     .tracking(1.6)
                     .foregroundColor(Theme.ink)
@@ -471,7 +428,12 @@ struct LibraryView: View {
         .padding(.horizontal, 30)
     }
 
-    // MARK: Actions
+    // MARK: - Actions
+
+    private func createNewPDFDocument() {
+        let newDoc = store.create(format: .pdf)
+        editingDocument = newDoc
+    }
 
     private func toggleSearch() {
         withAnimation(.easeInOut(duration: 0.18)) {
@@ -487,32 +449,24 @@ struct LibraryView: View {
         }
     }
 
-    private func openPendingDocument() {
-        guard let document = pendingDocument else { return }
-        pendingDocument = nil
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            editingDocument = document
-        }
-    }
-
     private func importFile(from url: URL) {
         let name = url.deletingPathExtension().lastPathComponent
-        var format: DocumentFormat = .txt
-        if let detected = DocumentFormat.from(url: url) {
-            format = detected
-        }
+        var newDoc = Document(format: .pdf, title: name)
 
-        var newDoc = Document(format: format, title: name)
-
-        if format.isSpreadsheet {
-            if let content = try? String(contentsOf: url, encoding: .utf8) {
-                newDoc.spreadsheet = SpreadsheetData.fromCSV(content)
+        if let pdfDoc = PDFDocument(url: url) {
+            var paragraphs: [RichParagraph] = []
+            for p in 0..<pdfDoc.pageCount {
+                if let page = pdfDoc.page(at: p), let text = page.string, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    for line in text.components(separatedBy: .newlines) {
+                        let trimmed = line.trimmingCharacters(in: .whitespaces)
+                        if !trimmed.isEmpty {
+                            paragraphs.append(RichParagraph(text: trimmed))
+                        }
+                    }
+                }
             }
-        } else if format.isPresentation {
-            newDoc.presentation = PresentationDeck.defaultDeck()
-        } else {
-            if let content = try? String(contentsOf: url, encoding: .utf8) {
-                newDoc.content = RichText(paragraphs: content.components(separatedBy: .newlines).map { RichParagraph(text: $0) })
+            if !paragraphs.isEmpty {
+                newDoc.content = RichText(paragraphs: paragraphs)
             }
         }
 
@@ -520,6 +474,8 @@ struct LibraryView: View {
         editingDocument = newDoc
     }
 }
+
+// MARK: - Row & Helper Types
 
 struct ShareURLWrapper: Identifiable {
     let id = UUID()
@@ -531,8 +487,6 @@ private struct LibrarySection: Identifiable {
     let title: String
     let documents: [Document]
 }
-
-// MARK: - Row
 
 struct DocumentRow: View {
     let document: Document
@@ -549,12 +503,12 @@ struct DocumentRow: View {
         VStack(spacing: 0) {
             HStack(alignment: .top, spacing: 15) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(document.format.abbreviation)
-                        .font(Theme.mono(8.5, weight: .semibold))
+                    Text("PDF")
+                        .font(Theme.mono(8.5, weight: .bold))
                         .tracking(1.3)
-                        .foregroundColor(document.format.tint)
+                        .foregroundColor(Theme.accent)
                     Rectangle()
-                        .fill(document.format.tint)
+                        .fill(Theme.accent)
                         .frame(width: 18, height: 1)
                 }
                 .frame(width: 38, alignment: .leading)
@@ -586,91 +540,5 @@ struct DocumentRow: View {
             Hairline()
         }
         .contentShape(Rectangle())
-    }
-}
-
-// MARK: - New document
-
-struct NewDocumentSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    let onSelect: (DocumentFormat) -> Void
-
-    var body: some View {
-        ZStack {
-            Theme.paper.ignoresSafeArea()
-
-            VStack(alignment: .leading, spacing: 0) {
-                SheetBar(title: "New document") {
-                    dismiss()
-                }
-
-                Text("Choose a format")
-                    .font(Theme.serif(30))
-                    .foregroundColor(Theme.ink)
-                    .padding(.horizontal, Theme.gutter)
-                    .padding(.top, 6)
-
-                Text("Each format is set for a different kind of page.")
-                    .font(Theme.sans(12.5))
-                    .foregroundColor(Theme.inkSecondary)
-                    .padding(.horizontal, Theme.gutter)
-                    .padding(.top, 6)
-
-                Hairline()
-                    .padding(.top, 20)
-
-                ScrollView {
-                    VStack(spacing: 0) {
-                        ForEach(DocumentFormat.creatable) { format in
-                            formatRow(format)
-                            Hairline()
-                        }
-
-                        Text("All document, spreadsheet and presentation formats are equipped with dedicated desktop-class office editors.")
-                            .font(Theme.sans(11))
-                            .foregroundColor(Theme.inkTertiary)
-                            .lineSpacing(3)
-                            .padding(.top, 22)
-                    }
-                    .padding(.horizontal, Theme.gutter)
-                }
-            }
-        }
-    }
-
-    private func formatRow(_ format: DocumentFormat) -> some View {
-        Button {
-            onSelect(format)
-        } label: {
-            HStack(alignment: .top, spacing: 16) {
-                Text(format.abbreviation)
-                    .font(Theme.mono(9, weight: .semibold))
-                    .tracking(1.2)
-                    .foregroundColor(format.tint)
-                    .frame(width: 42, alignment: .leading)
-                    .padding(.top, 5)
-
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(format.title)
-                        .font(Theme.serif(21))
-                        .foregroundColor(Theme.ink)
-                    Text(format.detail)
-                        .font(Theme.sans(12))
-                        .foregroundColor(Theme.inkSecondary)
-                        .lineSpacing(2)
-                        .multilineTextAlignment(.leading)
-                }
-
-                Spacer(minLength: 10)
-
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(Theme.inkTertiary)
-                    .padding(.top, 7)
-            }
-            .padding(.vertical, 18)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(QuietButtonStyle())
     }
 }
