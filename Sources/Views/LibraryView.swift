@@ -377,9 +377,9 @@ struct LibraryView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "plus")
                         Text("Create First PDF")
+                            .kerning(1.4)
                     }
                     .font(Theme.sans(11, weight: .semibold))
-                    .kerning(1.4)
                     .foregroundColor(.white)
                     .padding(.horizontal, 22)
                     .padding(.vertical, 12)
