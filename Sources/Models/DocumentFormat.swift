@@ -1,93 +1,122 @@
 import SwiftUI
+import UIKit
 
-/// Represents the document formats supported by TrollDocs.
-public enum DocumentFormat: String, CaseIterable, Identifiable, Codable, Hashable {
-    case pdf = "pdf"
-    case txt = "txt"
-    case csv = "csv"
-    case docx = "docx"
-    case xlsx = "xlsx"
-    case pptx = "pptx"
+/// The document formats supported by TrollDocs desktop-class office suite.
+enum DocumentFormat: String, CaseIterable, Codable, Identifiable, Hashable {
+    case pdf
+    case txt
+    case csv
+    case docx
+    case xlsx
+    case pptx
 
-    public var id: String { rawValue }
+    var id: String { rawValue }
 
-    /// Human-readable title of the document format.
-    public var displayName: String {
+    var abbreviation: String { rawValue.uppercased() }
+
+    var title: String {
         switch self {
-        case .pdf:  return "PDF Document"
-        case .txt:  return "Plain Text"
-        case .csv:  return "CSV Spreadsheet"
-        case .docx: return "Word Document (DOCX)"
-        case .xlsx: return "Excel Workbook (XLSX)"
-        case .pptx: return "PowerPoint (PPTX)"
+        case .pdf: return "PDF Document"
+        case .txt: return "Plain Text"
+        case .csv: return "CSV Spreadsheet"
+        case .docx: return "Word Document"
+        case .xlsx: return "Excel Workbook"
+        case .pptx: return "PowerPoint Deck"
         }
     }
 
-    /// Uppercase short extension name.
-    public var shortName: String {
-        rawValue.uppercased()
-    }
-
-    /// Standard file extension without leading dot.
-    public var fileExtension: String {
-        rawValue
-    }
-
-    /// SF Symbol icon name suitable for iOS 15+.
-    public var systemIcon: String {
+    var detail: String {
         switch self {
-        case .pdf:  return "doc.richtext.fill"
-        case .txt:  return "doc.plaintext.fill"
-        case .csv:  return "tablecells.fill"
-        case .docx: return "doc.text.fill"
+        case .pdf: return "Print-ready document with running heads, folios, and annotations."
+        case .txt: return "Lightweight UTF-8 text with line numbering and find & replace."
+        case .csv: return "Interactive 2D spreadsheet with formulas, row/col operations, and auto-sum."
+        case .docx: return "Full rich document processor with desktop typography and formatting."
+        case .xlsx: return "Spreadsheet workbook with formula evaluation and financial styling."
+        case .pptx: return "Multi-slide presentation studio with layout themes and slideshow mode."
+        }
+    }
+
+    var fileExtension: String { rawValue }
+
+    var systemIcon: String {
+        switch self {
+        case .pdf: return "doc.richtext"
+        case .txt: return "doc.plaintext"
+        case .csv: return "tablecells"
+        case .docx: return "doc.text"
         case .xlsx: return "tablecells"
         case .pptx: return "rectangle.fill.on.rectangle.fill"
         }
     }
 
-    /// Standard MIME content type.
-    public var mimeType: String {
+    var editorName: String {
         switch self {
-        case .pdf:  return "application/pdf"
-        case .txt:  return "text/plain"
-        case .csv:  return "text/csv"
-        case .docx: return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        case .xlsx: return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        case .pptx: return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        case .pdf, .docx: return "TrollWord"
+        case .csv, .xlsx: return "TrollSheets"
+        case .pptx: return "TrollSlides"
+        case .txt: return "TrollText"
         }
     }
 
-    /// Whether full document compilation is implemented in Phase 1 MVP.
-    public var isPhase1Ready: Bool {
+    var categoryTitle: String {
         switch self {
-        case .pdf, .txt, .csv:
-            return true
-        case .docx, .xlsx, .pptx:
-            return false
+        case .pdf, .docx, .txt: return "Documents"
+        case .csv, .xlsx: return "Spreadsheets"
+        case .pptx: return "Presentations"
         }
     }
 
-    /// Accent badge color for UI indicators.
-    public var themeColor: Color {
+    var tint: Color {
         switch self {
-        case .pdf:  return Color.red
-        case .txt:  return Color.gray
-        case .csv:  return Color.green
-        case .docx: return Color.blue
-        case .xlsx: return Color(red: 0.1, green: 0.6, blue: 0.3)
-        case .pptx: return Color.orange
+        case .pdf: return Theme.accent
+        case .txt: return Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(hex: 0x9C9486) : UIColor(hex: 0x5B574E)
+        })
+        case .csv: return Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8FA894) : UIColor(hex: 0x3C5949)
+        })
+        case .docx: return Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8FA3B5) : UIColor(hex: 0x324A5C)
+        })
+        case .xlsx: return Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8FA894) : UIColor(hex: 0x3C5949)
+        })
+        case .pptx: return Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(hex: 0xB59A7E) : UIColor(hex: 0x80552F)
+        })
         }
     }
 
-    /// Identifies the format from a file URL.
-    public static func from(url: URL) -> DocumentFormat? {
+    /// All 6 formats are now fully supported with dedicated desktop-class editors!
+    var isAvailable: Bool { true }
+
+    static var creatable: [DocumentFormat] {
+        allCases
+    }
+
+    var isSpreadsheet: Bool { self == .csv || self == .xlsx }
+    var isPresentation: Bool { self == .pptx }
+    var isWordDocument: Bool { self == .pdf || self == .docx }
+    var isPlainText: Bool { self == .txt }
+
+    var supportsRichText: Bool { self == .pdf || self == .docx }
+    var supportsPageLayout: Bool { self == .pdf || self == .docx }
+
+    var bodyPlaceholder: String {
+        switch self {
+        case .pdf, .docx:
+            return "Begin writing. Headings, quotes, and body text are composed with desktop typography as you write."
+        case .txt:
+            return "Plain text editor with line numbers and find & replace."
+        case .csv, .xlsx:
+            return "Interactive 2D spreadsheet with cells, formula calculation, and column formatting."
+        case .pptx:
+            return "Slide canvas for title, bullet points, speaker notes, and presentation themes."
+        }
+    }
+
+    static func from(url: URL) -> DocumentFormat? {
         let ext = url.pathExtension.lowercased()
         return DocumentFormat(rawValue: ext)
-    }
-
-    /// Identifies the format from a raw extension string.
-    public static func from(extension ext: String) -> DocumentFormat? {
-        let cleanExt = ext.replacingOccurrences(of: ".", with: "").lowercased()
-        return DocumentFormat(rawValue: cleanExt)
     }
 }
