@@ -234,6 +234,13 @@ struct RichTextEditor: UIViewRepresentable {
         context.coordinator.onChange = onChange
         controller.composition = typography.composition(baseSize: baseSize, color: color)
 
+        let currentStyle = textView.traitCollection.userInterfaceStyle
+        if context.coordinator.userInterfaceStyle != currentStyle {
+            context.coordinator.userInterfaceStyle = currentStyle
+            reloadPreservingSelection(in: textView)
+            return
+        }
+
         if context.coordinator.documentID != documentID {
             context.coordinator.documentID = documentID
             context.coordinator.typography = typography
@@ -277,6 +284,7 @@ struct RichTextEditor: UIViewRepresentable {
         var onChange: (RichText) -> Void
         var documentID = UUID()
         var typography: TypographySettings?
+        var userInterfaceStyle: UIUserInterfaceStyle = .unspecified
 
         init(onChange: @escaping (RichText) -> Void) {
             self.onChange = onChange

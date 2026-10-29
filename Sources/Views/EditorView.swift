@@ -16,6 +16,11 @@ struct EditorView: View {
     @State private var exportedURL: URL?
     @State private var didDelete = false
     @FocusState private var titleFocused: Bool
+    @AppStorage("app_appearance") private var appearanceRaw: String = AppAppearance.system.rawValue
+
+    private var currentAppearance: AppAppearance {
+        AppAppearance(rawValue: appearanceRaw) ?? .system
+    }
 
     init(document: Document, store: DocumentStore) {
         _model = StateObject(wrappedValue: EditorViewModel(document: document, store: store))
@@ -33,6 +38,7 @@ struct EditorView: View {
         }
         .sheet(item: $activeSheet) { sheet in
             sheetContent(for: sheet)
+                .preferredColorScheme(currentAppearance.colorScheme)
         }
         .confirmationDialog(
             "Delete this document?",
@@ -62,6 +68,7 @@ struct EditorView: View {
         }
         .onAppear(perform: prepareEditor)
         .onDisappear(perform: finishEditing)
+        .preferredColorScheme(currentAppearance.colorScheme)
     }
 
     // MARK: - Top bar
@@ -149,6 +156,25 @@ struct EditorView: View {
                 openPreview()
             } label: {
                 Label("Preview Page", systemImage: "doc.text.magnifyingglass")
+            }
+
+            Divider()
+
+            Menu {
+                ForEach(AppAppearance.allCases) { item in
+                    Button {
+                        appearanceRaw = item.rawValue
+                        AppAppearance.apply(style: item.userInterfaceStyle)
+                    } label: {
+                        if appearanceRaw == item.rawValue {
+                            Label(item.title, systemImage: "checkmark")
+                        } else {
+                            Label(item.title, systemImage: item.iconName)
+                        }
+                    }
+                }
+            } label: {
+                Label("Theme: \(currentAppearance.title)", systemImage: currentAppearance.iconName)
             }
 
             Divider()

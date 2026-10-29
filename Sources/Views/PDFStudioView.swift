@@ -16,6 +16,11 @@ struct PDFStudioView: View {
     @State private var isShowingSearch: Bool = false
     @State private var isSharing: Bool = false
     @State private var pdfViewRef = PDFView()
+    @AppStorage("app_appearance") private var appearanceRaw: String = AppAppearance.system.rawValue
+
+    private var currentAppearance: AppAppearance {
+        AppAppearance(rawValue: appearanceRaw) ?? .system
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -53,6 +58,7 @@ struct PDFStudioView: View {
                 .background(Theme.sheet)
         }
         .onAppear(perform: loadPDF)
+        .preferredColorScheme(currentAppearance.colorScheme)
         .sheet(isPresented: $isSharing) {
             ShareSheetView(activityItems: [documentURL])
         }
@@ -86,6 +92,20 @@ struct PDFStudioView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 14))
                     .foregroundColor(isShowingSearch ? Theme.accent : Theme.inkSecondary)
+            }
+
+            // Theme Switcher Menu
+            Menu {
+                Picker("Appearance", selection: $appearanceRaw) {
+                    ForEach(AppAppearance.allCases) { item in
+                        Label(item.title, systemImage: item.iconName)
+                            .tag(item.rawValue)
+                    }
+                }
+            } label: {
+                Image(systemName: currentAppearance.iconName)
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.inkSecondary)
             }
 
             // Share Button
@@ -270,6 +290,7 @@ struct PDFKitRepresentedView: UIViewRepresentable {
             uiView.document = document
             uiView.autoScales = true
         }
+        uiView.backgroundColor = Theme.deskUIColor
     }
 
     func makeCoordinator() -> Coordinator {

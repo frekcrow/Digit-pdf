@@ -138,6 +138,7 @@ struct PDFPreviewView: UIViewRepresentable {
             context.coordinator.data = data
             uiView.document = PDFDocument(data: data)
         }
+        uiView.backgroundColor = Theme.deskUIColor
     }
 
     final class Coordinator {

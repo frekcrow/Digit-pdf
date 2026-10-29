@@ -16,6 +16,11 @@ struct LibraryView: View {
     @State private var sharingURLWrapper: ShareURLWrapper?
     @State private var editingDocument: Document?
     @FocusState private var searchFocused: Bool
+    @AppStorage("app_appearance") private var appearanceRaw: String = AppAppearance.system.rawValue
+
+    private var currentAppearance: AppAppearance {
+        AppAppearance(rawValue: appearanceRaw) ?? .system
+    }
 
     var body: some View {
         ZStack {
@@ -49,6 +54,7 @@ struct LibraryView: View {
                     }
                 }
             )
+            .preferredColorScheme(currentAppearance.colorScheme)
         }
         .sheet(item: $sharingURLWrapper) { wrapper in
             ShareSheetView(activityItems: [wrapper.url])
@@ -72,7 +78,9 @@ struct LibraryView: View {
         .fullScreenCover(item: $editingDocument) { document in
             EditorView(document: document, store: store)
                 .environmentObject(store)
+                .preferredColorScheme(currentAppearance.colorScheme)
         }
+        .preferredColorScheme(currentAppearance.colorScheme)
     }
 
     // MARK: - Masthead
@@ -86,6 +94,21 @@ struct LibraryView: View {
                     .foregroundColor(Theme.accent)
 
                 Spacer()
+
+                Menu {
+                    Picker("Appearance", selection: $appearanceRaw) {
+                        ForEach(AppAppearance.allCases) { item in
+                            Label(item.title, systemImage: item.iconName)
+                                .tag(item.rawValue)
+                        }
+                    }
+                } label: {
+                    Image(systemName: currentAppearance.iconName)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.inkSecondary)
+                        .frame(width: 32, height: 32)
+                }
+                .buttonStyle(QuietButtonStyle())
 
                 Button {
                     toggleSearch()
