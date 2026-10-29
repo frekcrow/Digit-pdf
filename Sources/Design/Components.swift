@@ -23,7 +23,7 @@ struct SmallCaps: View {
     var body: some View {
         Text(text.uppercased())
             .font(Theme.sans(size, weight: weight))
-            .tracking(tracking)
+            .kerning(tracking)
             .foregroundColor(color)
     }
 }
@@ -190,7 +190,7 @@ struct SheetBar: View {
             Button(action: onClose) {
                 Text(trailingTitle.uppercased())
                     .font(Theme.sans(10, weight: .semibold))
-                    .tracking(1.6)
+                    .kerning(1.6)
                     .foregroundColor(trailingIsAccent ? Theme.accent : Theme.ink)
             }
             .buttonStyle(QuietButtonStyle())

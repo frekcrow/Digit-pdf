@@ -86,7 +86,7 @@ struct EditorView: View {
 
                 Text("PDF")
                     .font(Theme.mono(8.5, weight: .semibold))
-                    .tracking(1.7)
+                    .kerning(1.7)
                     .foregroundColor(Theme.accent)
 
                 Spacer()
@@ -271,14 +271,14 @@ struct EditorView: View {
                 HStack(spacing: 8) {
                     Text(metricsLine)
                         .font(Theme.mono(8))
-                        .tracking(1.1)
+                        .kerning(1.1)
                         .foregroundColor(Theme.inkTertiary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Spacer(minLength: 8)
                     Text("PAGE SETUP")
                         .font(Theme.sans(8.5, weight: .semibold))
-                        .tracking(1.4)
+                        .kerning(1.4)
                         .foregroundColor(Theme.accent)
                 }
                 .padding(.horizontal, Theme.gutter)

@@ -1,4 +1,4 @@
-﻿import SwiftUI
+import SwiftUI
 import PDFKit
 
 /// The printed result, shown over the writing desk.
@@ -54,7 +54,7 @@ struct PreviewView: View {
                 } label: {
                     Text("Close")
                         .font(Theme.sans(10, weight: .semibold))
-                        .tracking(1.5)
+                        .kerning(1.5)
                         .foregroundColor(Theme.inkSecondary)
                 }
                 .buttonStyle(QuietButtonStyle())
@@ -67,7 +67,7 @@ struct PreviewView: View {
                         .foregroundColor(Theme.ink)
                     Text("\(pageCount) \(pageCount == 1 ? "PAGE" : "PAGES")")
                         .font(Theme.mono(7.5, weight: .medium))
-                        .tracking(1.2)
+                        .kerning(1.2)
                         .foregroundColor(Theme.inkTertiary)
                 }
 

@@ -235,7 +235,7 @@ struct InspectorView: View {
                 } label: {
                     Text("Reset")
                         .font(Theme.sans(9.5, weight: .semibold))
-                        .tracking(1.3)
+                        .kerning(1.3)
                         .foregroundColor(Theme.accent)
                 }
                 .buttonStyle(QuietButtonStyle())

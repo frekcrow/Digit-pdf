@@ -82,7 +82,7 @@ struct LibraryView: View {
             HStack(spacing: 10) {
                 Text("TROLLDOCS PDF")
                     .font(Theme.mono(9.5, weight: .bold))
-                    .tracking(2.6)
+                    .kerning(2.6)
                     .foregroundColor(Theme.accent)
 
                 Spacer()
@@ -105,7 +105,7 @@ struct LibraryView: View {
                             .font(.system(size: 9, weight: .semibold))
                         Text("IMPORT")
                             .font(Theme.sans(9.5, weight: .semibold))
-                            .tracking(1.6)
+                            .kerning(1.6)
                     }
                     .foregroundColor(Theme.inkSecondary)
                     .padding(.horizontal, 10)
@@ -124,7 +124,7 @@ struct LibraryView: View {
                             .font(.system(size: 9, weight: .semibold))
                         Text("NEW PDF")
                             .font(Theme.sans(9.5, weight: .semibold))
-                            .tracking(1.6)
+                            .kerning(1.6)
                     }
                     .foregroundColor(Theme.accent)
                     .padding(.horizontal, 12)
@@ -151,7 +151,7 @@ struct LibraryView: View {
 
             Text(summaryLine)
                 .font(Theme.mono(8.5))
-                .tracking(1.3)
+                .kerning(1.3)
                 .foregroundColor(Theme.inkTertiary)
                 .padding(.top, 4)
 
@@ -333,7 +333,7 @@ struct LibraryView: View {
         HStack {
             Text(title.uppercased())
                 .font(Theme.mono(8.5, weight: .bold))
-                .tracking(1.4)
+                .kerning(1.4)
                 .foregroundColor(Theme.inkTertiary)
             Spacer()
         }
@@ -379,7 +379,7 @@ struct LibraryView: View {
                         Text("Create First PDF")
                     }
                     .font(Theme.sans(11, weight: .semibold))
-                    .tracking(1.4)
+                    .kerning(1.4)
                     .foregroundColor(.white)
                     .padding(.horizontal, 22)
                     .padding(.vertical, 12)
@@ -416,7 +416,7 @@ struct LibraryView: View {
             } label: {
                 Text("Clear Search")
                     .font(Theme.sans(10, weight: .semibold))
-                    .tracking(1.6)
+                    .kerning(1.6)
                     .foregroundColor(Theme.ink)
             }
             .buttonStyle(InkButtonStyle(filled: false))
@@ -505,7 +505,7 @@ struct DocumentRow: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("PDF")
                         .font(Theme.mono(8.5, weight: .bold))
-                        .tracking(1.3)
+                        .kerning(1.3)
                         .foregroundColor(Theme.accent)
                     Rectangle()
                         .fill(Theme.accent)
@@ -523,7 +523,7 @@ struct DocumentRow: View {
 
                     Text(metaLine)
                         .font(Theme.mono(8.5))
-                        .tracking(0.4)
+                        .kerning(0.4)
                         .foregroundColor(Theme.inkTertiary)
                         .lineLimit(1)
                 }
