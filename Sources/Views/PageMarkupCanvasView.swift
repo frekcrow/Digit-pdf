@@ -67,6 +67,7 @@ struct PageMarkupCanvasView: View {
 
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Clear") {
+                        Haptics.destructive()
                         canvasView.drawing = PKDrawing()
                         hasDrawn = false
                     }
@@ -121,6 +122,7 @@ struct PageMarkupCanvasView: View {
         let drawingImage = drawing.image(from: canvasView.bounds, scale: UIScreen.main.scale)
 
         PDFAnnotationHelper.addSignature(to: page, image: drawingImage, at: CGPoint(x: 0, y: 0))
+        Haptics.success()
         onSaved()
         dismiss()
     }

@@ -53,11 +53,14 @@ struct PreviewView: View {
                     dismiss()
                 } label: {
                     Text("Close")
-                        .font(Theme.sans(10, weight: .semibold))
+                        .font(Theme.sans(10.5, weight: .semibold))
                         .kerning(1.5)
                         .foregroundColor(Theme.inkSecondary)
+                        .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel("Close preview")
 
                 Spacer()
 
@@ -77,15 +80,16 @@ struct PreviewView: View {
                     shareDocument()
                 } label: {
                     Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 15, weight: .medium))
                         .foregroundColor(Theme.inkSecondary)
-                        .frame(width: 30, height: 30)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel("Share PDF")
             }
             .padding(.horizontal, Theme.gutter)
-            .padding(.top, 12)
-            .padding(.bottom, 10)
+            .padding(.vertical, 4)
             .background(Theme.paper)
 
             Hairline()

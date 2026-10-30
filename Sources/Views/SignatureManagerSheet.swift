@@ -81,10 +81,13 @@ struct SignatureManagerSheet: View {
                 .font(Theme.sans(12, weight: .semibold))
                 .foregroundColor(.white)
                 .padding(.horizontal, 20)
-                .padding(.vertical, 10)
+                .padding(.vertical, 12)
                 .background(Theme.accent)
                 .clipShape(Capsule())
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel("Create Signature")
             .padding(.top, 8)
 
             Spacer()
@@ -132,10 +135,14 @@ struct SignatureManagerSheet: View {
                                 .font(.system(size: 16))
                                 .foregroundColor(Theme.accent.opacity(0.8))
                         }
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 6)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Insert \(sig.name), created on \(formattedDate(sig.createdAt))")
                 }
                 .onDelete { indexSet in
+                    Haptics.destructive()
                     for index in indexSet {
                         let sig = store.signatures[index]
                         store.delete(sig)

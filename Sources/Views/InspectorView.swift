@@ -5,13 +5,9 @@ struct InspectorView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ZStack {
-            Theme.paper.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                SheetBar(title: "Document setup") {
-                    dismiss()
-                }
+        NavigationView {
+            ZStack {
+                Theme.paper.ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -43,7 +39,18 @@ struct InspectorView: View {
                             .padding(.bottom, 40)
                     }
                     .padding(.horizontal, Theme.gutter)
-                    .padding(.top, 6)
+                    .padding(.top, 12)
+                }
+            }
+            .navigationTitle("Document Setup")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .font(Theme.sans(13, weight: .semibold))
+                    .foregroundColor(Theme.accent)
                 }
             }
         }
@@ -404,7 +411,11 @@ struct InspectorView: View {
                     .fill(selected ? Theme.accent : Color.clear)
                     .frame(height: 1.5)
             }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(QuietButtonStyle())
+        .accessibilityLabel("Typeface: \(font.title)")
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }

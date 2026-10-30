@@ -138,7 +138,7 @@ struct PDFStudioView: View {
     // MARK: - Top Bar
 
     private var topBar: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             Button(action: { dismiss() }) {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
@@ -147,7 +147,10 @@ struct PDFStudioView: View {
                         .font(Theme.sans(12))
                 }
                 .foregroundColor(Theme.inkSecondary)
+                .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel("Done, close PDF studio")
 
             Spacer()
 
@@ -155,6 +158,7 @@ struct PDFStudioView: View {
                 .font(Theme.mono(10.5, weight: .bold))
                 .foregroundColor(Theme.ink)
                 .lineLimit(1)
+                .accessibilityAddTraits(.isHeader)
 
             Spacer()
 
@@ -163,21 +167,33 @@ struct PDFStudioView: View {
                 Image(systemName: "square.grid.2x2")
                     .font(.system(size: 14))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Page Organizer")
+            .accessibilityHint("Manage, rotate, reorder, or delete pages")
 
             // Markup Toolbar Toggle
             Button(action: { withAnimation { isShowingMarkupToolbar.toggle() } }) {
                 Image(systemName: "pencil.tip.crop.circle")
                     .font(.system(size: 15))
                     .foregroundColor(isShowingMarkupToolbar ? Theme.accent : Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Markup toolbar")
+            .accessibilityAddTraits(isShowingMarkupToolbar ? .isSelected : [])
 
             // Search Toggle
             Button(action: { withAnimation { isShowingSearch.toggle() } }) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 14))
                     .foregroundColor(isShowingSearch ? Theme.accent : Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Search in PDF")
+            .accessibilityAddTraits(isShowingSearch ? .isSelected : [])
 
             // Actions & Export Menu
             Menu {
@@ -205,14 +221,17 @@ struct PDFStudioView: View {
                 Image(systemName: "ellipsis.circle")
                     .font(.system(size: 15))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("More document actions and export")
         }
     }
 
     // MARK: - Markup Toolbar
 
     private var markupToolbarView: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 6) {
             // Draw on Page
             Button(action: { isShowingDrawingCanvas = true }) {
                 HStack(spacing: 4) {
@@ -225,7 +244,10 @@ struct PDFStudioView: View {
                 .padding(.vertical, 5)
                 .background(Theme.accentWash)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel("Draw freehand annotations on page")
 
             // Text Box
             Button(action: { isShowingAddTextAlert = true }) {
@@ -235,7 +257,11 @@ struct PDFStudioView: View {
                 }
                 .font(Theme.sans(11, weight: .medium))
                 .foregroundColor(Theme.ink)
+                .padding(.horizontal, 8)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel("Add text box")
 
             // Signature
             Button(action: { isShowingSignatureManager = true }) {
@@ -245,7 +271,11 @@ struct PDFStudioView: View {
                 }
                 .font(Theme.sans(11, weight: .medium))
                 .foregroundColor(Theme.ink)
+                .padding(.horizontal, 8)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel("Insert saved signature")
 
             Divider().frame(height: 18).background(Theme.rule)
 
@@ -254,19 +284,28 @@ struct PDFStudioView: View {
                 Image(systemName: "highlighter")
                     .font(.system(size: 12))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Highlight selected text")
 
             Button(action: applyStrikeout) {
                 Image(systemName: "strikethrough")
                     .font(.system(size: 12))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Strikeout selected text")
 
             Button(action: applyUnderline) {
                 Image(systemName: "underline")
                     .font(.system(size: 12))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Underline selected text")
 
             Spacer()
 
@@ -275,18 +314,21 @@ struct PDFStudioView: View {
                 Image(systemName: "arrow.uturn.backward")
                     .font(.system(size: 12))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Undo last annotation")
         }
     }
 
     // MARK: - Search Bar
 
     private var searchBarView: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             TextField("Find in PDF...", text: $searchQuery)
                 .font(Theme.sans(12))
                 .padding(.horizontal, 8)
-                .padding(.vertical, 5)
+                .padding(.vertical, 7)
                 .background(Theme.desk)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .onSubmit {
@@ -301,12 +343,18 @@ struct PDFStudioView: View {
                 Button(action: previousMatch) {
                     Image(systemName: "chevron.up")
                         .font(.system(size: 12))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Previous match")
 
                 Button(action: nextMatch) {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Next match")
             } else if !searchQuery.isEmpty {
                 Text("No matches")
                     .font(Theme.mono(10))
@@ -317,20 +365,26 @@ struct PDFStudioView: View {
                 Text("Find")
                     .font(Theme.sans(11, weight: .semibold))
                     .foregroundColor(Theme.accent)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Search")
         }
     }
 
     // MARK: - Bottom Scrubber Bar
 
     private var bottomBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 8) {
             Button(action: goToPreviousPage) {
                 Image(systemName: "chevron.backward")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(currentPage > 1 ? Theme.ink : Theme.inkTertiary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .disabled(currentPage <= 1)
+            .accessibilityLabel("Previous page")
 
             Text("Page \(currentPage) of \(totalPages)")
                 .font(Theme.mono(11, weight: .bold))
@@ -340,8 +394,11 @@ struct PDFStudioView: View {
                 Image(systemName: "chevron.forward")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(currentPage < totalPages ? Theme.ink : Theme.inkTertiary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .disabled(currentPage >= totalPages)
+            .accessibilityLabel("Next page")
 
             Spacer()
 
@@ -349,13 +406,19 @@ struct PDFStudioView: View {
                 Image(systemName: "plus.magnifyingglass")
                     .font(.system(size: 13))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Zoom in")
 
             Button(action: zoomOut) {
                 Image(systemName: "minus.magnifyingglass")
                     .font(.system(size: 13))
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Zoom out")
         }
     }
 
@@ -379,6 +442,7 @@ struct PDFStudioView: View {
     private func saveInPlace() {
         guard let doc = pdfDocument else { return }
         doc.write(to: documentURL)
+        Haptics.success()
 
         withAnimation {
             isShowingSaveToast = true
@@ -399,6 +463,7 @@ struct PDFStudioView: View {
 
         do {
             try flattenedData.write(to: tempURL)
+            Haptics.success()
             shareItems = [tempURL]
             isSharing = true
         } catch {
@@ -448,6 +513,7 @@ struct PDFStudioView: View {
 
     private func undoLastAnnotation() {
         guard let page = pdfViewRef.currentPage, let last = page.annotations.last else { return }
+        Haptics.destructive()
         page.removeAnnotation(last)
         pdfViewRef.layoutDocumentView()
     }

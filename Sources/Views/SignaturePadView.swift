@@ -100,6 +100,7 @@ struct SignaturePadView: View {
 
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Clear") {
+                        Haptics.destructive()
                         canvasView.drawing = PKDrawing()
                         hasDrawn = false
                     }
@@ -132,6 +133,7 @@ struct SignaturePadView: View {
             store.save(image: image, name: signatureName.isEmpty ? "Signature" : signatureName)
         }
 
+        Haptics.success()
         onSignatureCaptured(image)
         dismiss()
     }

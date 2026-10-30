@@ -114,41 +114,53 @@ struct PDFPageOrganizerView: View {
                     movePage(from: index, to: index - 1)
                 } label: {
                     Image(systemName: "arrow.left")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(index > 0 ? Theme.inkSecondary : Theme.inkTertiary.opacity(0.4))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .disabled(index <= 0)
+                .accessibilityLabel("Move page \(index + 1) left")
 
                 // Move right
                 Button {
                     movePage(from: index, to: index + 1)
                 } label: {
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(index < doc.pageCount - 1 ? Theme.inkSecondary : Theme.inkTertiary.opacity(0.4))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .disabled(index >= doc.pageCount - 1)
+                .accessibilityLabel("Move page \(index + 1) right")
 
                 // Rotate 90
                 Button {
                     rotatePage(at: index)
                 } label: {
                     Image(systemName: "rotate.right")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Theme.accent)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Rotate page \(index + 1) 90 degrees")
 
                 // Delete
                 Button {
                     deletePage(at: index)
                 } label: {
                     Image(systemName: "trash")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(doc.pageCount > 1 ? Theme.accent : Theme.inkTertiary.opacity(0.4))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .disabled(doc.pageCount <= 1)
+                .accessibilityLabel("Delete page \(index + 1)")
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 2)
         }
         .padding(8)
         .background(Theme.sheet)
@@ -172,7 +184,10 @@ struct PDFPageOrganizerView: View {
                 }
                 .font(Theme.sans(12, weight: .medium))
                 .foregroundColor(Theme.ink)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel("Add blank page")
 
             Spacer()
 
@@ -185,10 +200,13 @@ struct PDFPageOrganizerView: View {
                 }
                 .font(Theme.sans(12, weight: .semibold))
                 .foregroundColor(Theme.accent)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel("Insert external PDF")
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .padding(.vertical, 8)
         .background(Theme.sheet)
     }
 
@@ -235,6 +253,7 @@ struct PDFPageOrganizerView: View {
 
     private func deletePage(at index: Int) {
         guard let doc = workingDoc, doc.pageCount > 1, index < doc.pageCount else { return }
+        Haptics.destructive()
         doc.removePage(at: index)
         refreshThumbnails()
     }
@@ -275,6 +294,7 @@ struct PDFPageOrganizerView: View {
     private func applyChanges() {
         guard let doc = workingDoc else { return }
         doc.write(to: documentURL)
+        Haptics.success()
         onCommit()
         dismiss()
     }

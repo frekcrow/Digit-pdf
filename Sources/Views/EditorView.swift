@@ -86,8 +86,11 @@ struct EditorView: View {
                             .font(Theme.sans(12))
                     }
                     .foregroundColor(Theme.inkSecondary)
+                    .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel("Back to Library")
 
                 Spacer()
 
@@ -95,6 +98,7 @@ struct EditorView: View {
                     .font(Theme.mono(8.5, weight: .semibold))
                     .kerning(1.7)
                     .foregroundColor(Theme.accent)
+                    .accessibilityLabel("PDF format")
 
                 Spacer()
 
@@ -104,14 +108,16 @@ struct EditorView: View {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(Theme.inkSecondary)
-                        .frame(width: 34, height: 34)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel("Preview PDF pages")
 
                 menu
             }
             .padding(.horizontal, Theme.gutter)
-            .padding(.vertical, 7)
+            .padding(.vertical, 4)
             .background(Theme.paper)
 
             Hairline()
@@ -202,9 +208,10 @@ struct EditorView: View {
             Image(systemName: "ellipsis")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(Theme.inkSecondary)
-                .frame(width: 34, height: 34)
+                .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
+        .accessibilityLabel("Document actions and export menu")
     }
 
     // MARK: - Manuscript
@@ -296,47 +303,49 @@ struct EditorView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text(metricsLine)
-                        .font(Theme.mono(8))
+                        .font(Theme.mono(8.5))
                         .kerning(1.1)
                         .foregroundColor(Theme.inkTertiary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Spacer(minLength: 8)
                     Text("PAGE SETUP")
-                        .font(Theme.sans(8.5, weight: .semibold))
+                        .font(Theme.sans(9, weight: .semibold))
                         .kerning(1.4)
                         .foregroundColor(Theme.accent)
                 }
                 .padding(.horizontal, Theme.gutter)
-                .frame(height: 28)
+                .frame(minHeight: 44)
                 .contentShape(Rectangle())
             }
             .buttonStyle(QuietButtonStyle())
+            .accessibilityLabel("Page setup: \(metricsLine)")
+            .accessibilityHint("Double tap to open page and typography inspector")
         }
         .background(Theme.paper)
     }
 
     private var richToolRow: some View {
         HStack(spacing: 2) {
-            ToolButton {
+            ToolButton(action: {
                 richText.toggleBold()
-            } label: {
+            }, accessibilityLabel: "Bold") {
                 Text("B")
                     .font(Theme.serif(17, weight: .bold))
                     .foregroundColor(Theme.ink)
             }
 
-            ToolButton {
+            ToolButton(action: {
                 richText.toggleItalic()
-            } label: {
+            }, accessibilityLabel: "Italic") {
                 Text("I")
                     .font(Theme.serif(17).italic())
                     .foregroundColor(Theme.ink)
             }
 
-            ToolButton {
+            ToolButton(action: {
                 richText.toggleUnderline()
-            } label: {
+            }, accessibilityLabel: "Underline") {
                 Text("U")
                     .font(Theme.serif(17))
                     .underline()
@@ -349,9 +358,9 @@ struct EditorView: View {
 
             paragraphMenu
 
-            ToolButton {
+            ToolButton(action: {
                 cycleAlignment()
-            } label: {
+            }, accessibilityLabel: "Text alignment: \(model.document.typography.alignment.title)") {
                 Image(systemName: model.document.typography.alignment.systemIcon)
                     .font(.system(size: 15, weight: .regular))
                     .foregroundColor(Theme.inkSecondary)
@@ -359,9 +368,9 @@ struct EditorView: View {
 
             Spacer(minLength: 0)
 
-            ToolButton {
+            ToolButton(action: {
                 activeSheet = .inspector
-            } label: {
+            }, accessibilityLabel: "Typography and page inspector") {
                 Text("Aa")
                     .font(Theme.serif(15))
                     .foregroundColor(Theme.inkSecondary)
@@ -408,9 +417,10 @@ struct EditorView: View {
             Image(systemName: "plus.circle")
                 .font(.system(size: 16, weight: .regular))
                 .foregroundColor(Theme.accent)
-                .frame(width: 38, height: 38)
+                .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
+        .accessibilityLabel("Insert table, divider, or list")
     }
 
     private var paragraphMenu: some View {
@@ -439,9 +449,10 @@ struct EditorView: View {
                     .font(.system(size: 6, weight: .bold))
                     .foregroundColor(Theme.inkTertiary)
             }
-            .frame(width: 42, height: 42)
+            .frame(width: 44, height: 44)
             .contentShape(Rectangle())
         }
+        .accessibilityLabel("Paragraph style")
     }
 
     // MARK: - Derived
@@ -502,6 +513,7 @@ struct EditorView: View {
         do {
             model.flush()
             let url = try store.export(model.document)
+            Haptics.success()
             exportedURL = url
             alertTitle = "Saved"
             alertMessage = "\(url.lastPathComponent) is now in the TrollDocs folder of the Files app."
@@ -538,6 +550,7 @@ struct EditorView: View {
     }
 
     private func deleteDocument() {
+        Haptics.destructive()
         model.discard()
         store.delete(model.document)
         didDelete = true

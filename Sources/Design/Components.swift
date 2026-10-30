@@ -65,27 +65,39 @@ struct QuietButtonStyle: ButtonStyle {
     }
 }
 
-/// 44pt square hit target for the editor's tool row.
+/// 44pt square hit target for the editor's tool row matching Apple HIG.
 struct ToolButton<Label: View>: View {
     let action: () -> Void
     let isEnabled: Bool
+    var accessibilityLabel: String?
+    var isSelected: Bool
     let label: () -> Label
 
-    init(action: @escaping () -> Void, isEnabled: Bool = true, @ViewBuilder label: @escaping () -> Label) {
+    init(
+        action: @escaping () -> Void,
+        isEnabled: Bool = true,
+        accessibilityLabel: String? = nil,
+        isSelected: Bool = false,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
         self.action = action
         self.isEnabled = isEnabled
+        self.accessibilityLabel = accessibilityLabel
+        self.isSelected = isSelected
         self.label = label
     }
 
     var body: some View {
         Button(action: action) {
             label()
-                .frame(width: 42, height: 42)
+                .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
         .buttonStyle(QuietButtonStyle())
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.3)
+        .accessibilityLabel(accessibilityLabel ?? "")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -109,14 +121,19 @@ struct ChoiceChip: View {
                     .fill(selected ? Theme.accent : Color.clear)
                     .frame(height: 1.5)
             }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(QuietButtonStyle())
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
 struct IconChoice: View {
     let systemName: String
     var selected: Bool
+    var accessibilityLabel: String? = nil
     var action: () -> Void
 
     var body: some View {
@@ -131,8 +148,12 @@ struct IconChoice: View {
                         .stroke(selected ? Theme.accent.opacity(0.5) : Color.clear,
                                 lineWidth: Theme.hairline * 1.2)
                 )
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(QuietButtonStyle())
+        .accessibilityLabel(accessibilityLabel ?? systemName)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
@@ -186,18 +207,22 @@ struct SheetBar: View {
     var body: some View {
         HStack {
             SmallCaps(text: title, color: Theme.inkTertiary)
+                .accessibilityAddTraits(.isHeader)
             Spacer()
             Button(action: onClose) {
                 Text(trailingTitle.uppercased())
-                    .font(Theme.sans(10, weight: .semibold))
+                    .font(Theme.sans(10.5, weight: .semibold))
                     .kerning(1.6)
                     .foregroundColor(trailingIsAccent ? Theme.accent : Theme.ink)
+                    .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(QuietButtonStyle())
+            .accessibilityLabel(trailingTitle)
         }
         .padding(.horizontal, Theme.gutter)
-        .padding(.top, 18)
-        .padding(.bottom, 14)
+        .padding(.top, 12)
+        .padding(.bottom, 10)
     }
 }
 
@@ -209,8 +234,29 @@ struct BarDivider: View {
     }
 }
 
+// MARK: - Haptic Feedback & Touch Target Helpers
+
+enum Haptics {
+    static func destructive() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.prepare()
+        generator.notificationOccurred(.warning)
+    }
+
+    static func success() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.prepare()
+        generator.notificationOccurred(.success)
+    }
+}
 
 extension View {
+    /// Enforces Apple HIG minimum 44×44 pt touch hit target with invisible padding.
+    func minimumTouchTarget(width: CGFloat = 44, height: CGFloat = 44) -> some View {
+        self.frame(minWidth: width, minHeight: height)
+            .contentShape(Rectangle())
+    }
+
     /// iOS 16 gives lists their own opaque background. Keep the paper showing.
     @ViewBuilder
     func paperBackedList() -> some View {

@@ -106,9 +106,11 @@ struct LibraryView: View {
                     Image(systemName: currentAppearance.iconName)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Theme.inkSecondary)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel("Appearance theme: \(currentAppearance.title)")
 
                 Button {
                     toggleSearch()
@@ -116,16 +118,18 @@ struct LibraryView: View {
                     Image(systemName: showingSearch ? "xmark" : "magnifyingglass")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Theme.inkSecondary)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel(showingSearch ? "Close search" : "Search documents")
 
                 Button {
                     showingImportPicker = true
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "square.and.arrow.down")
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.system(size: 9.5, weight: .semibold))
                         Text("IMPORT")
                             .font(Theme.sans(9.5, weight: .semibold))
                             .kerning(1.6)
@@ -136,15 +140,18 @@ struct LibraryView: View {
                     .overlay(
                         Rectangle().stroke(Theme.ruleStrong, lineWidth: Theme.hairline)
                     )
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel("Import PDF document")
 
                 Button {
                     createNewPDFDocument()
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "plus")
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.system(size: 9.5, weight: .semibold))
                         Text("NEW PDF")
                             .font(Theme.sans(9.5, weight: .semibold))
                             .kerning(1.6)
@@ -155,8 +162,11 @@ struct LibraryView: View {
                     .overlay(
                         Rectangle().stroke(Theme.ruleStrong, lineWidth: Theme.hairline)
                     )
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
+                .accessibilityLabel("Create new PDF document")
             }
             .padding(.top, 8)
 
@@ -215,10 +225,13 @@ struct LibraryView: View {
                         searchText = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14))
                             .foregroundColor(Theme.inkTertiary)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(QuietButtonStyle())
+                    .accessibilityLabel("Clear search text")
                 }
             }
             Hairline(color: Theme.ruleStrong)
@@ -288,6 +301,7 @@ struct LibraryView: View {
                         .listRowSeparator(.hidden)
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
+                                Haptics.destructive()
                                 store.delete(document)
                             } label: {
                                 Label("Delete", systemImage: "trash")
@@ -338,6 +352,7 @@ struct LibraryView: View {
                             Divider()
 
                             Button(role: .destructive) {
+                                Haptics.destructive()
                                 store.delete(document)
                             } label: {
                                 Label("Delete", systemImage: "trash")
@@ -408,7 +423,10 @@ struct LibraryView: View {
                     .padding(.vertical, 12)
                     .background(Theme.accent)
                     .clipShape(Capsule())
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Create first PDF")
                 .padding(.top, 8)
             }
 
@@ -441,8 +459,11 @@ struct LibraryView: View {
                     .font(Theme.sans(10, weight: .semibold))
                     .kerning(1.6)
                     .foregroundColor(Theme.ink)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(InkButtonStyle(filled: false))
+            .accessibilityLabel("Clear search")
             .padding(.top, 22)
 
             Spacer()
@@ -563,5 +584,8 @@ struct DocumentRow: View {
             Hairline()
         }
         .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(document.displayTitle), PDF document, \(metaLine)")
+        .accessibilityHint("Double tap to open in editor")
     }
 }
