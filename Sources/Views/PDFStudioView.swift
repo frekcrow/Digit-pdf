@@ -2,7 +2,7 @@ import SwiftUI
 import PDFKit
 import UIKit
 
-/// Desktop-grade PDF studio and reader using Apple's native PDFKit framework ("TrollPDF").
+/// Desktop-grade PDF studio and editor using Apple's native PDFKit framework ("TrollPDF").
 struct PDFStudioView: View {
     let documentURL: URL
     @Environment(\.dismiss) private var dismiss
@@ -14,8 +14,17 @@ struct PDFStudioView: View {
     @State private var searchResults: [PDFSelection] = []
     @State private var currentMatchIndex: Int = 0
     @State private var isShowingSearch: Bool = false
+    @State private var isShowingMarkupToolbar: Bool = true
+    @State private var isShowingPageOrganizer: Bool = false
+    @State private var isShowingSignatureManager: Bool = false
+    @State private var isShowingDrawingCanvas: Bool = false
+    @State private var isShowingAddTextAlert: Bool = false
+    @State private var newAnnotationText: String = ""
     @State private var isSharing: Bool = false
+    @State private var shareItems: [Any] = []
+    @State private var isShowingSaveToast: Bool = false
     @State private var pdfViewRef = PDFView()
+
     @AppStorage("app_appearance") private var appearanceRaw: String = AppAppearance.system.rawValue
 
     private var currentAppearance: AppAppearance {
@@ -24,10 +33,10 @@ struct PDFStudioView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // PDF Studio Top Toolbar
+            // Top Toolbar
             topBar
                 .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .padding(.vertical, 8)
                 .background(Theme.sheet)
 
             Divider().background(Theme.rule)
@@ -42,12 +51,42 @@ struct PDFStudioView: View {
                 Divider().background(Theme.rule)
             }
 
+            // Markup Toolbar (if active)
+            if isShowingMarkupToolbar {
+                markupToolbarView
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 7)
+                    .background(Theme.paper)
+
+                Divider().background(Theme.rule)
+            }
+
             // PDF Canvas
-            PDFKitRepresentedView(document: pdfDocument, pdfView: pdfViewRef, onPageChanged: { page, total in
-                self.currentPage = page
-                self.totalPages = total
-            })
-            .edgesIgnoringSafeArea(.bottom)
+            ZStack(alignment: .top) {
+                PDFKitRepresentedView(document: pdfDocument, pdfView: pdfViewRef, onPageChanged: { page, total in
+                    self.currentPage = page
+                    self.totalPages = total
+                })
+                .edgesIgnoringSafeArea(.bottom)
+
+                // Save feedback toast
+                if isShowingSaveToast {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("Changes Saved")
+                            .font(Theme.sans(12, weight: .semibold))
+                            .foregroundColor(Theme.ink)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Theme.sheet)
+                    .clipShape(Capsule())
+                    .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
+                    .padding(.top, 12)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
 
             Divider().background(Theme.rule)
 
@@ -60,7 +99,39 @@ struct PDFStudioView: View {
         .onAppear(perform: loadPDF)
         .preferredColorScheme(currentAppearance.colorScheme)
         .sheet(isPresented: $isSharing) {
-            ShareSheetView(activityItems: [documentURL])
+            ShareSheetView(activityItems: shareItems)
+        }
+        .sheet(isPresented: $isShowingPageOrganizer) {
+            PDFPageOrganizerView(documentURL: documentURL) {
+                loadPDF()
+            }
+        }
+        .sheet(isPresented: $isShowingSignatureManager) {
+            SignatureManagerSheet { signatureImage in
+                stampSignature(signatureImage)
+            }
+        }
+        .sheet(isPresented: $isShowingDrawingCanvas) {
+            if let doc = pdfDocument, currentPage > 0, currentPage <= doc.pageCount,
+               let page = doc.page(at: currentPage - 1) {
+                PageMarkupCanvasView(page: page, pageIndex: currentPage - 1) {
+                    refreshCurrentPage()
+                }
+            }
+        }
+        .alert("Add Text Box", isPresented: $isShowingAddTextAlert) {
+            TextField("Enter annotation text", text: $newAnnotationText)
+            Button("Add") {
+                if !newAnnotationText.isEmpty {
+                    addTextBox(newAnnotationText)
+                    newAnnotationText = ""
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                newAnnotationText = ""
+            }
+        } message: {
+            Text("Enter text to place onto the active page.")
         }
     }
 
@@ -87,6 +158,20 @@ struct PDFStudioView: View {
 
             Spacer()
 
+            // Page Organizer Toggle
+            Button(action: { isShowingPageOrganizer = true }) {
+                Image(systemName: "square.grid.2x2")
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.inkSecondary)
+            }
+
+            // Markup Toolbar Toggle
+            Button(action: { withAnimation { isShowingMarkupToolbar.toggle() } }) {
+                Image(systemName: "pencil.tip.crop.circle")
+                    .font(.system(size: 15))
+                    .foregroundColor(isShowingMarkupToolbar ? Theme.accent : Theme.inkSecondary)
+            }
+
             // Search Toggle
             Button(action: { withAnimation { isShowingSearch.toggle() } }) {
                 Image(systemName: "magnifyingglass")
@@ -94,8 +179,22 @@ struct PDFStudioView: View {
                     .foregroundColor(isShowingSearch ? Theme.accent : Theme.inkSecondary)
             }
 
-            // Theme Switcher Menu
+            // Actions & Export Menu
             Menu {
+                Button(action: saveInPlace) {
+                    Label("Save Changes In-Place", systemImage: "square.and.arrow.down")
+                }
+
+                Button(action: exportFlattenedPDF) {
+                    Label("Export Flattened PDF (Baked)", systemImage: "doc.badge.gearshape")
+                }
+
+                Button(action: shareStandardPDF) {
+                    Label("Share Original PDF", systemImage: "square.and.arrow.up")
+                }
+
+                Divider()
+
                 Picker("Appearance", selection: $appearanceRaw) {
                     ForEach(AppAppearance.allCases) { item in
                         Label(item.title, systemImage: item.iconName)
@@ -103,15 +202,78 @@ struct PDFStudioView: View {
                     }
                 }
             } label: {
-                Image(systemName: currentAppearance.iconName)
-                    .font(.system(size: 14))
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 15))
+                    .foregroundColor(Theme.inkSecondary)
+            }
+        }
+    }
+
+    // MARK: - Markup Toolbar
+
+    private var markupToolbarView: some View {
+        HStack(spacing: 14) {
+            // Draw on Page
+            Button(action: { isShowingDrawingCanvas = true }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "pencil")
+                    Text("Draw")
+                }
+                .font(Theme.sans(11, weight: .medium))
+                .foregroundColor(Theme.accent)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 5)
+                .background(Theme.accentWash)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+
+            // Text Box
+            Button(action: { isShowingAddTextAlert = true }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "character.textbox")
+                    Text("Text")
+                }
+                .font(Theme.sans(11, weight: .medium))
+                .foregroundColor(Theme.ink)
+            }
+
+            // Signature
+            Button(action: { isShowingSignatureManager = true }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "signature")
+                    Text("Sign")
+                }
+                .font(Theme.sans(11, weight: .medium))
+                .foregroundColor(Theme.ink)
+            }
+
+            Divider().frame(height: 18).background(Theme.rule)
+
+            // Text Selection Markup
+            Button(action: applyHighlight) {
+                Image(systemName: "highlighter")
+                    .font(.system(size: 12))
                     .foregroundColor(Theme.inkSecondary)
             }
 
-            // Share Button
-            Button(action: { isSharing = true }) {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.system(size: 14))
+            Button(action: applyStrikeout) {
+                Image(systemName: "strikethrough")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.inkSecondary)
+            }
+
+            Button(action: applyUnderline) {
+                Image(systemName: "underline")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.inkSecondary)
+            }
+
+            Spacer()
+
+            // Undo Last Annotation
+            Button(action: undoLastAnnotation) {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(size: 12))
                     .foregroundColor(Theme.inkSecondary)
             }
         }
@@ -197,13 +359,97 @@ struct PDFStudioView: View {
         }
     }
 
-    // MARK: - PDFKit Actions
+    // MARK: - PDFKit Actions & Annotations
 
     private func loadPDF() {
         if let doc = PDFDocument(url: documentURL) {
             self.pdfDocument = doc
             self.totalPages = doc.pageCount
         }
+    }
+
+    private func refreshCurrentPage() {
+        if let current = pdfViewRef.currentPage {
+            let index = (pdfDocument?.index(for: current) ?? 0) + 1
+            self.currentPage = index
+            pdfViewRef.layoutDocumentView()
+        }
+    }
+
+    private func saveInPlace() {
+        guard let doc = pdfDocument else { return }
+        doc.write(to: documentURL)
+
+        withAnimation {
+            isShowingSaveToast = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation {
+                isShowingSaveToast = false
+            }
+        }
+    }
+
+    private func exportFlattenedPDF() {
+        guard let doc = pdfDocument else { return }
+        let flattenedData = PDFAnnotationHelper.flatten(document: doc)
+
+        let baseName = documentURL.deletingPathExtension().lastPathComponent
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(baseName)_Flattened.pdf")
+
+        do {
+            try flattenedData.write(to: tempURL)
+            shareItems = [tempURL]
+            isSharing = true
+        } catch {
+            print("Flattening export failed: \(error)")
+        }
+    }
+
+    private func shareStandardPDF() {
+        // Save current changes first
+        pdfDocument?.write(to: documentURL)
+        shareItems = [documentURL]
+        isSharing = true
+    }
+
+    private func stampSignature(_ image: UIImage) {
+        guard let page = pdfViewRef.currentPage else { return }
+        PDFAnnotationHelper.addSignature(to: page, image: image)
+        pdfViewRef.layoutDocumentView()
+    }
+
+    private func addTextBox(_ text: String) {
+        guard let page = pdfViewRef.currentPage else { return }
+        PDFAnnotationHelper.addFreeText(to: page, text: text, color: Theme.inkUIColor)
+        pdfViewRef.layoutDocumentView()
+    }
+
+    private func applyHighlight() {
+        guard let sel = pdfViewRef.currentSelection else { return }
+        PDFAnnotationHelper.addHighlight(selection: sel)
+        pdfViewRef.clearSelection()
+        pdfViewRef.layoutDocumentView()
+    }
+
+    private func applyStrikeout() {
+        guard let sel = pdfViewRef.currentSelection else { return }
+        PDFAnnotationHelper.addStrikeout(selection: sel)
+        pdfViewRef.clearSelection()
+        pdfViewRef.layoutDocumentView()
+    }
+
+    private func applyUnderline() {
+        guard let sel = pdfViewRef.currentSelection else { return }
+        PDFAnnotationHelper.addUnderline(selection: sel)
+        pdfViewRef.clearSelection()
+        pdfViewRef.layoutDocumentView()
+    }
+
+    private func undoLastAnnotation() {
+        guard let page = pdfViewRef.currentPage, let last = page.annotations.last else { return }
+        page.removeAnnotation(last)
+        pdfViewRef.layoutDocumentView()
     }
 
     private func goToPreviousPage() {
