@@ -12,15 +12,23 @@ enum ParagraphKind: String, CaseIterable, Codable, Identifiable {
     case heading
     case subheading
     case quote
+    case bulletList
+    case numberedList
+    case divider
+    case pageBreak
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .body: return "Body"
-        case .heading: return "Heading"
-        case .subheading: return "Subheading"
+        case .heading: return "Heading 1"
+        case .subheading: return "Heading 2"
         case .quote: return "Quotation"
+        case .bulletList: return "Bulleted List"
+        case .numberedList: return "Numbered List"
+        case .divider: return "Section Divider"
+        case .pageBreak: return "Hard Page Break"
         }
     }
 
@@ -30,6 +38,10 @@ enum ParagraphKind: String, CaseIterable, Codable, Identifiable {
         case .heading: return "H1"
         case .subheading: return "H2"
         case .quote: return "QUOTE"
+        case .bulletList: return "• LIST"
+        case .numberedList: return "1. LIST"
+        case .divider: return "LINE"
+        case .pageBreak: return "PAGE BREAK"
         }
     }
 
@@ -39,11 +51,19 @@ enum ParagraphKind: String, CaseIterable, Codable, Identifiable {
         case .heading: return 1.55
         case .subheading: return 1.2
         case .quote: return 1
+        case .bulletList: return 1
+        case .numberedList: return 1
+        case .divider: return 0.7
+        case .pageBreak: return 0.6
         }
     }
 
     var isBoldByDefault: Bool {
         self == .heading || self == .subheading
+    }
+
+    var isList: Bool {
+        self == .bulletList || self == .numberedList
     }
 }
 
@@ -118,21 +138,48 @@ extension RichText {
     func compose(_ composition: TextComposition) -> NSAttributedString {
         let result = NSMutableAttributedString()
         let count = paragraphs.count
+        var listCounter = 1
 
         for (index, paragraph) in paragraphs.enumerated() {
             let baseAttributes = composition.attributes(for: paragraph.kind)
 
-            for run in paragraph.runs where !run.text.isEmpty {
-                var attributes = baseAttributes
-                attributes[.font] = composition.font.uiFont(
-                    size: composition.size(for: paragraph.kind),
-                    bold: run.bold || paragraph.kind.isBoldByDefault,
-                    italic: run.italic || paragraph.kind == .quote
-                )
-                if run.underline {
-                    attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+            if paragraph.kind == .divider {
+                var divAttrs = baseAttributes
+                divAttrs[.font] = UIFont.systemFont(ofSize: 9, weight: .light)
+                divAttrs[.foregroundColor] = Theme.ruleStrongUIColor
+                result.append(NSAttributedString(string: "─── ─── ───", attributes: divAttrs))
+            } else if paragraph.kind == .pageBreak {
+                var breakAttrs = baseAttributes
+                breakAttrs[.font] = UIFont.monospacedSystemFont(ofSize: 8, weight: .bold)
+                breakAttrs[.foregroundColor] = Theme.accentUIColor
+                result.append(NSAttributedString(string: "\u{000C}─── [PAGE BREAK] ───", attributes: breakAttrs))
+            } else {
+                if paragraph.kind == .bulletList {
+                    var bulletAttrs = baseAttributes
+                    bulletAttrs[.foregroundColor] = Theme.accentUIColor
+                    result.append(NSAttributedString(string: "•  ", attributes: bulletAttrs))
+                } else if paragraph.kind == .numberedList {
+                    var numAttrs = baseAttributes
+                    numAttrs[.foregroundColor] = Theme.accentUIColor
+                    numAttrs[.font] = UIFont.monospacedDigitSystemFont(ofSize: composition.size(for: .numberedList), weight: .semibold)
+                    result.append(NSAttributedString(string: "\(listCounter).  ", attributes: numAttrs))
+                    listCounter += 1
+                } else {
+                    listCounter = 1
                 }
-                result.append(NSAttributedString(string: run.text, attributes: attributes))
+
+                for run in paragraph.runs where !run.text.isEmpty {
+                    var attributes = baseAttributes
+                    attributes[.font] = composition.font.uiFont(
+                        size: composition.size(for: paragraph.kind),
+                        bold: run.bold || paragraph.kind.isBoldByDefault,
+                        italic: run.italic || paragraph.kind == .quote
+                    )
+                    if run.underline {
+                        attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+                    }
+                    result.append(NSAttributedString(string: run.text, attributes: attributes))
+                }
             }
 
             if index < count - 1 {

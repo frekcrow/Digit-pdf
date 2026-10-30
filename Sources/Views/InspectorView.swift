@@ -30,7 +30,8 @@ struct InspectorView: View {
                             .padding(.top, 30)
                         runningSection
                             .padding(.top, 30)
-
+                        watermarkSection
+                            .padding(.top, 30)
                         detailsSection
                             .padding(.top, 30)
 
@@ -267,6 +268,75 @@ struct InspectorView: View {
                 )
             }
             .padding(.top, 20)
+        }
+    }
+
+    // MARK: - Watermark
+
+    private var watermarkSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionLabel(title: "Watermark")
+                .padding(.bottom, 12)
+
+            toggleRow("Enable Watermark", isOn: $document.page.watermark.isEnabled)
+            Hairline()
+
+            if document.page.watermark.isEnabled {
+                InspectorRow("Preset") {
+                    HStack(spacing: 8) {
+                        ForEach(["DRAFT", "CONFIDENTIAL", "FINAL", "SAMPLE"], id: \.self) { preset in
+                            ChoiceChip(
+                                title: preset,
+                                selected: document.page.watermark.text == preset
+                            ) {
+                                document.page.watermark.text = preset
+                            }
+                        }
+                    }
+                }
+                Hairline()
+
+                InspectorRow("Text") {
+                    TextField("Watermark text", text: $document.page.watermark.text)
+                        .font(Theme.sans(13))
+                        .foregroundColor(Theme.ink)
+                        .multilineTextAlignment(.trailing)
+                        .textFieldStyle(PlainTextFieldStyle())
+                }
+                Hairline()
+
+                InspectorRow("Opacity") {
+                    HStack(spacing: 12) {
+                        Slider(value: $document.page.watermark.opacity, in: 0.05...0.40, step: 0.05)
+                            .frame(width: 140)
+                            .tint(Theme.accent)
+                        Text("\(Int(document.page.watermark.opacity * 100))%")
+                            .font(Theme.mono(9))
+                            .foregroundColor(Theme.inkSecondary)
+                            .frame(width: 44, alignment: .trailing)
+                    }
+                }
+                Hairline()
+
+                InspectorRow("Angle") {
+                    HStack(spacing: 12) {
+                        ChoiceChip(
+                            title: "45° Diagonal",
+                            selected: document.page.watermark.angle == 45.0
+                        ) {
+                            document.page.watermark.angle = 45.0
+                        }
+
+                        ChoiceChip(
+                            title: "0° Horizontal",
+                            selected: document.page.watermark.angle == 0.0
+                        ) {
+                            document.page.watermark.angle = 0.0
+                        }
+                    }
+                }
+                Hairline()
+            }
         }
     }
 

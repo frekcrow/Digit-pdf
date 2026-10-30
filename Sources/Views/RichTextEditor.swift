@@ -177,6 +177,55 @@ final class RichTextController: ObservableObject {
         emitChange()
     }
 
+    // MARK: - Structural Inserts
+
+    func insertText(_ text: String, kind: ParagraphKind = .body) {
+        guard let textView = textView else { return }
+        let selection = textView.selectedRange
+        let storage = textView.textStorage
+
+        let attrs = composition.attributes(for: kind)
+        let insertion = NSAttributedString(string: text, attributes: attrs)
+
+        storage.beginEditing()
+        storage.replaceCharacters(in: selection, with: insertion)
+        storage.endEditing()
+
+        textView.selectedRange = NSRange(location: selection.location + insertion.length, length: 0)
+        emitChange()
+    }
+
+    func insertDivider() {
+        insertText("\n─── ─── ───\n", kind: .divider)
+    }
+
+    func insertPageBreak() {
+        insertText("\n\u{000C}─── [PAGE BREAK] ───\n", kind: .pageBreak)
+    }
+
+    func insertTable(rows: Int = 3, cols: Int = 3) {
+        var tableText = "\n"
+        var headers: [String] = []
+        var dividers: [String] = []
+        for c in 1...cols {
+            headers.append("Column \(c)")
+            dividers.append("----------")
+        }
+        tableText += "| " + headers.joined(separator: " | ") + " |\n"
+        tableText += "| " + dividers.joined(separator: " | ") + " |\n"
+
+        for r in 1...max(1, rows - 1) {
+            var rowItems: [String] = []
+            for c in 1...cols {
+                rowItems.append("Item \(r).\(c)")
+            }
+            tableText += "| " + rowItems.joined(separator: " | ") + " |\n"
+        }
+        tableText += "\n"
+
+        insertText(tableText, kind: .body)
+    }
+
     private func emitChange() {
         guard let textView = textView else { return }
         onChange?(RichText.extract(from: textView.attributedText))

@@ -123,6 +123,14 @@ enum PageNumberStyle: String, CaseIterable, Codable, Identifiable {
     }
 }
 
+struct WatermarkSettings: Codable, Equatable {
+    var isEnabled: Bool = false
+    var text: String = "DRAFT"
+    var opacity: Double = 0.12
+    var angle: Double = 45.0
+    var fontSize: CGFloat = 54.0
+}
+
 struct PageSettings: Codable, Equatable {
     var size: PageSize = .a4
     var orientation: PageOrientation = .portrait
@@ -134,6 +142,52 @@ struct PageSettings: Codable, Equatable {
     var footerText: String = ""
     var showsRules: Bool = true
     var hasCoverPage: Bool = false
+    var watermark: WatermarkSettings = WatermarkSettings()
+
+    enum CodingKeys: String, CodingKey {
+        case size, orientation, margin, customMargin, showsPageNumbers, pageNumberStyle, headerText, footerText, showsRules, hasCoverPage, watermark
+    }
+
+    init(
+        size: PageSize = .a4,
+        orientation: PageOrientation = .portrait,
+        margin: MarginPreset = .normal,
+        customMargin: CGFloat = 57,
+        showsPageNumbers: Bool = true,
+        pageNumberStyle: PageNumberStyle = .pageOfTotal,
+        headerText: String = "",
+        footerText: String = "",
+        showsRules: Bool = true,
+        hasCoverPage: Bool = false,
+        watermark: WatermarkSettings = WatermarkSettings()
+    ) {
+        self.size = size
+        self.orientation = orientation
+        self.margin = margin
+        self.customMargin = customMargin
+        self.showsPageNumbers = showsPageNumbers
+        self.pageNumberStyle = pageNumberStyle
+        self.headerText = headerText
+        self.footerText = footerText
+        self.showsRules = showsRules
+        self.hasCoverPage = hasCoverPage
+        self.watermark = watermark
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.size = try container.decodeIfPresent(PageSize.self, forKey: .size) ?? .a4
+        self.orientation = try container.decodeIfPresent(PageOrientation.self, forKey: .orientation) ?? .portrait
+        self.margin = try container.decodeIfPresent(MarginPreset.self, forKey: .margin) ?? .normal
+        self.customMargin = try container.decodeIfPresent(CGFloat.self, forKey: .customMargin) ?? 57
+        self.showsPageNumbers = try container.decodeIfPresent(Bool.self, forKey: .showsPageNumbers) ?? true
+        self.pageNumberStyle = try container.decodeIfPresent(PageNumberStyle.self, forKey: .pageNumberStyle) ?? .pageOfTotal
+        self.headerText = try container.decodeIfPresent(String.self, forKey: .headerText) ?? ""
+        self.footerText = try container.decodeIfPresent(String.self, forKey: .footerText) ?? ""
+        self.showsRules = try container.decodeIfPresent(Bool.self, forKey: .showsRules) ?? true
+        self.hasCoverPage = try container.decodeIfPresent(Bool.self, forKey: .hasCoverPage) ?? false
+        self.watermark = try container.decodeIfPresent(WatermarkSettings.self, forKey: .watermark) ?? WatermarkSettings()
+    }
 
     var bounds: CGSize {
         let base = size.points
@@ -296,15 +350,42 @@ struct TextComposition {
 
     func paragraphStyle(for kind: ParagraphKind) -> NSParagraphStyle {
         let style = NSMutableParagraphStyle()
-        style.alignment = kind == .quote ? .left : alignment.nsAlignment
+
+        switch kind {
+        case .quote:
+            style.alignment = .left
+            style.headIndent = size(for: kind) * 1.3
+        case .bulletList:
+            style.alignment = .left
+            style.headIndent = size(for: kind) * 1.5
+            style.firstLineHeadIndent = 0
+            style.paragraphSpacing = paragraphSpacing * 0.6
+        case .numberedList:
+            style.alignment = .left
+            style.headIndent = size(for: kind) * 1.8
+            style.firstLineHeadIndent = 0
+            style.paragraphSpacing = paragraphSpacing * 0.6
+        case .divider:
+            style.alignment = .center
+            style.paragraphSpacing = paragraphSpacing * 1.5
+            style.paragraphSpacingBefore = paragraphSpacing * 1.5
+        case .pageBreak:
+            style.alignment = .center
+            style.paragraphSpacing = paragraphSpacing
+            style.paragraphSpacingBefore = paragraphSpacing
+        default:
+            style.alignment = alignment.nsAlignment
+            style.firstLineHeadIndent = kind == .body ? firstLineIndent : 0
+        }
+
         style.lineBreakMode = .byWordWrapping
         style.lineHeightMultiple = leading
-        style.paragraphSpacing = paragraphSpacing
+        if kind != .bulletList && kind != .numberedList && kind != .divider && kind != .pageBreak {
+            style.paragraphSpacing = paragraphSpacing
+        }
         style.paragraphSpacingBefore = kind == .heading
             ? size(for: kind) * 1.0
-            : (kind == .subheading ? size(for: kind) * 0.55 : 0)
-        style.firstLineHeadIndent = kind == .body ? firstLineIndent : 0
-        style.headIndent = kind == .quote ? size(for: kind) * 1.3 : 0
+            : (kind == .subheading ? size(for: kind) * 0.55 : (kind == .divider ? 12 : 0))
         return style
     }
 

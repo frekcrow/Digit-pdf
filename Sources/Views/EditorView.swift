@@ -345,6 +345,8 @@ struct EditorView: View {
 
             BarDivider()
 
+            insertMenu
+
             paragraphMenu
 
             ToolButton {
@@ -367,6 +369,48 @@ struct EditorView: View {
         }
         .padding(.horizontal, 8)
         .frame(height: 44)
+    }
+
+    private var insertMenu: some View {
+        Menu {
+            Button {
+                richText.insertTable(rows: 3, cols: 3)
+            } label: {
+                Label("Data Table", systemImage: "tablecells")
+            }
+
+            Button {
+                richText.insertDivider()
+            } label: {
+                Label("Section Divider", systemImage: "minus")
+            }
+
+            Button {
+                richText.insertPageBreak()
+            } label: {
+                Label("Hard Page Break", systemImage: "doc.badge.plus")
+            }
+
+            Divider()
+
+            Button {
+                richText.apply(kind: .bulletList)
+            } label: {
+                Label("Bulleted List", systemImage: "list.bullet")
+            }
+
+            Button {
+                richText.apply(kind: .numberedList)
+            } label: {
+                Label("Numbered List", systemImage: "list.number")
+            }
+        } label: {
+            Image(systemName: "plus.circle")
+                .font(.system(size: 16, weight: .regular))
+                .foregroundColor(Theme.accent)
+                .frame(width: 38, height: 38)
+                .contentShape(Rectangle())
+        }
     }
 
     private var paragraphMenu: some View {

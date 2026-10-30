@@ -5,7 +5,10 @@ from __future__ import annotations
 
 import argparse
 import errno
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 import hashlib
 import json
 import os
@@ -131,18 +134,24 @@ def assert_regular_or_missing(path: Path) -> None:
 
 
 def fsync_directory(path: Path) -> None:
-    descriptor = os.open(path, os.O_RDONLY)
+    if os.name == "nt":
+        return
     try:
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
+        descriptor = os.open(path, os.O_RDONLY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+    except OSError:
+        pass
 
 
 def write_json(path: Path, data: dict[str, Any]) -> None:
     assert_regular_or_missing(path)
     handle, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
-        os.fchmod(handle, 0o600)
+        if hasattr(os, "fchmod"):
+            os.fchmod(handle, 0o600)
         with os.fdopen(handle, "w", encoding="utf-8") as stream:
             json.dump(data, stream, indent=2, sort_keys=True)
             stream.write("\n")
@@ -178,11 +187,14 @@ def run_lock(directory: Path) -> Iterator[None]:
         flags |= os.O_NOFOLLOW
     descriptor = os.open(lock_path, flags, 0o600)
     try:
-        os.fchmod(descriptor, 0o600)
-        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        if hasattr(os, "fchmod"):
+            os.fchmod(descriptor, 0o600)
+        if fcntl is not None:
+            fcntl.flock(descriptor, fcntl.LOCK_EX)
         yield
     finally:
-        fcntl.flock(descriptor, fcntl.LOCK_UN)
+        if fcntl is not None:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
         os.close(descriptor)
 
 

@@ -89,12 +89,14 @@ final class DocumentRenderer {
             if document.page.hasCoverPage {
                 context.beginPage()
                 drawPaper(pageSize, in: context.cgContext)
+                drawWatermark(document.page.watermark, in: context.cgContext, pageSize: pageSize)
                 drawCover(document, pageSize: pageSize, margin: margin, context: context.cgContext)
             }
 
             for (index, range) in pages.enumerated() {
                 context.beginPage()
                 drawPaper(pageSize, in: context.cgContext)
+                drawWatermark(document.page.watermark, in: context.cgContext, pageSize: pageSize)
 
                 let isOpening = index == 0 && !document.page.hasCoverPage
 
@@ -475,6 +477,32 @@ final class DocumentRenderer {
         context.saveGState()
         context.setFillColor(UIColor.white.cgColor)
         context.fill(CGRect(origin: .zero, size: size))
+        context.restoreGState()
+    }
+
+    private func drawWatermark(_ watermark: WatermarkSettings, in context: CGContext, pageSize: CGSize) {
+        guard watermark.isEnabled && !watermark.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        context.saveGState()
+
+        let center = CGPoint(x: pageSize.width / 2.0, y: pageSize.height / 2.0)
+        context.translateBy(x: center.x, y: center.y)
+        let radians = watermark.angle * (.pi / 180.0)
+        context.rotate(by: CGFloat(radians))
+
+        let font = UIFont.systemFont(ofSize: watermark.fontSize, weight: .black)
+        let color = inkColor.withAlphaComponent(CGFloat(watermark.opacity))
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: color
+        ]
+
+        let str = NSAttributedString(string: watermark.text, attributes: attributes)
+        let textSize = str.size()
+        let textRect = CGRect(x: -textSize.width / 2.0, y: -textSize.height / 2.0, width: textSize.width, height: textSize.height)
+
+        str.draw(in: textRect)
+
         context.restoreGState()
     }
 
