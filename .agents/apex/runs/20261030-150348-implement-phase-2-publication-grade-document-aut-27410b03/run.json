@@ -94,15 +94,43 @@
       "message": "Integrated validation checkpoint",
       "phase": "validate",
       "timestamp": "2026-10-30T12:14:04+00:00"
+    },
+    {
+      "git": {
+        "available": true,
+        "branch": "main",
+        "branch_fingerprint": "6403203dd5a0867eb14d104ee8a73730bd72dd9ad92e78d996a6dba0a5dcfc01",
+        "changes": [
+          {
+            "path": ".agents/apex/runs/20261030-150348-implement-phase-2-publication-grade-document-aut-27410b03/journal.jsonl",
+            "status": " M"
+          },
+          {
+            "path": ".agents/apex/runs/20261030-150348-implement-phase-2-publication-grade-document-aut-27410b03/run.json",
+            "status": " M"
+          }
+        ],
+        "errors": [],
+        "paths_redacted": false,
+        "revision": "ec0f39f005234d7d28f3a4231f3a266e29b43174",
+        "status_fingerprint": "7f6c30eaaa10bcc50ec725e2ef7ca91f7ff5bc8c58e1ac61c118d950290fb22f",
+        "upstream": "origin/main",
+        "upstream_error": null,
+        "verified": true
+      },
+      "id": "3ced0c91-93a9-4b59-b871-d0b7ebe7c968",
+      "message": "APEX run complete",
+      "phase": "handoff",
+      "timestamp": "2026-10-30T12:16:19+00:00"
     }
   ],
   "created_at": "2026-10-30T12:03:48+00:00",
-  "current_phase": "validate",
-  "last_event_id": "259401d2-81f2-41cb-9c5b-6570f59469bc",
+  "current_phase": "handoff",
+  "last_event_id": "05038e98-18fa-4162-aff7-04bcaf094653",
   "root": "\\\\wsl.localhost\\Ubuntu\\home\\aws\\Digit-Pdf",
   "run_id": "20261030-150348-implement-phase-2-publication-grade-document-aut-27410b03",
   "schema_version": 1,
-  "status": "active",
+  "status": "complete",
   "task": "Implement Phase 2: Publication-Grade Document Authoring Engine (Lists, Images, Tables, Page Breaks, and Watermarks)",
-  "updated_at": "2026-10-30T12:14:17+00:00"
+  "updated_at": "2026-10-30T12:16:32+00:00"
 }
