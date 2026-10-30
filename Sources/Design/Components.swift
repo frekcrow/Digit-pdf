@@ -40,28 +40,70 @@ struct SectionLabel: View {
     }
 }
 
-// MARK: - Buttons
+// MARK: - Buttons & Cupertino Cards
+
+struct CupertinoCard<Content: View>: View {
+    var cornerRadius: CGFloat = Theme.cardCornerRadius
+    var padding: CGFloat = 16
+    let content: () -> Content
+
+    init(cornerRadius: CGFloat = Theme.cardCornerRadius, padding: CGFloat = 16, @ViewBuilder content: @escaping () -> Content) {
+        self.cornerRadius = cornerRadius
+        self.padding = padding
+        self.content = content
+    }
+
+    var body: some View {
+        content()
+            .padding(padding)
+            .background(Theme.sheet)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(Theme.rule, lineWidth: Theme.hairline)
+            )
+            .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+}
+
+struct CupertinoBadge: View {
+    let text: String
+    var color: Color = Theme.accent
+
+    var body: some View {
+        Text(text.uppercased())
+            .font(Theme.sans(10, weight: .bold))
+            .foregroundColor(color)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3.5)
+            .background(color.opacity(0.12))
+            .clipShape(Capsule())
+    }
+}
 
 struct InkButtonStyle: ButtonStyle {
     var filled: Bool = true
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .font(Theme.sans(12, weight: .semibold))
             .padding(.horizontal, 16)
-            .padding(.vertical, 11)
-            .background(Rectangle().fill(filled ? Theme.ink : Color.clear))
+            .padding(.vertical, 10)
+            .background(filled ? Theme.accent : Color.clear)
+            .foregroundColor(filled ? .white : Theme.accent)
+            .clipShape(Capsule())
             .overlay(
-                Rectangle()
-                    .stroke(Theme.ink, lineWidth: filled ? 0 : Theme.hairline * 1.3)
+                Capsule()
+                    .stroke(Theme.accent, lineWidth: filled ? 0 : 1)
             )
-            .opacity(configuration.isPressed ? 0.65 : 1)
+            .opacity(configuration.isPressed ? 0.75 : 1)
     }
 }
 
 struct QuietButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .opacity(configuration.isPressed ? 0.45 : 1)
+            .opacity(configuration.isPressed ? 0.5 : 1)
     }
 }
 
@@ -91,6 +133,10 @@ struct ToolButton<Label: View>: View {
         Button(action: action) {
             label()
                 .frame(width: 44, height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isSelected ? Theme.accentWash : Color.clear)
+                )
                 .contentShape(Rectangle())
         }
         .buttonStyle(QuietButtonStyle())
@@ -103,7 +149,7 @@ struct ToolButton<Label: View>: View {
 
 // MARK: - Choices
 
-/// A word with a rule beneath it. The only selected-state language in the app.
+/// An Apple-style segmented choice chip.
 struct ChoiceChip: View {
     let title: String
     var selected: Bool
@@ -112,17 +158,21 @@ struct ChoiceChip: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: alignment, spacing: 6) {
-                Text(title)
-                    .font(Theme.sans(12, weight: selected ? .semibold : .regular))
-                    .foregroundColor(selected ? Theme.ink : Theme.inkSecondary)
-                    .fixedSize()
-                Rectangle()
-                    .fill(selected ? Theme.accent : Color.clear)
-                    .frame(height: 1.5)
-            }
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
+            Text(title)
+                .font(Theme.sans(12.5, weight: selected ? .semibold : .regular))
+                .foregroundColor(selected ? (Theme.accent) : Theme.inkSecondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(
+                    Capsule()
+                        .fill(selected ? Theme.accentWash : Color(uiColor: .tertiarySystemFill))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(selected ? Theme.accent.opacity(0.4) : Color.clear, lineWidth: 1)
+                )
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(QuietButtonStyle())
         .accessibilityLabel(title)
@@ -139,14 +189,16 @@ struct IconChoice: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(selected ? Theme.ink : Theme.inkTertiary)
-                .frame(width: 34, height: 30)
-                .background(Rectangle().fill(selected ? Theme.accentWash : Color.clear))
+                .font(.system(size: 15, weight: selected ? .semibold : .regular))
+                .foregroundColor(selected ? Theme.accent : Theme.inkSecondary)
+                .frame(width: 38, height: 34)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(selected ? Theme.accentWash : Color(uiColor: .tertiarySystemFill))
+                )
                 .overlay(
-                    Rectangle()
-                        .stroke(selected ? Theme.accent.opacity(0.5) : Color.clear,
-                                lineWidth: Theme.hairline * 1.2)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(selected ? Theme.accent.opacity(0.4) : Color.clear, lineWidth: 1)
                 )
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
@@ -185,14 +237,15 @@ struct UnderlineField: View {
     @Binding var text: String
 
     var body: some View {
-        VStack(spacing: 7) {
-            TextField(placeholder, text: $text)
-                .font(Theme.serif(15))
-                .foregroundColor(Theme.ink)
-                .textInputAutocapitalization(.sentences)
-                .disableAutocorrection(true)
-            Hairline(color: Theme.ruleStrong)
-        }
+        TextField(placeholder, text: $text)
+            .font(Theme.sans(15))
+            .foregroundColor(Theme.ink)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(uiColor: .tertiarySystemFill))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .textInputAutocapitalization(.sentences)
+            .disableAutocorrection(true)
     }
 }
 
@@ -206,13 +259,14 @@ struct SheetBar: View {
 
     var body: some View {
         HStack {
-            SmallCaps(text: title, color: Theme.inkTertiary)
+            Text(title)
+                .font(Theme.sans(16, weight: .semibold))
+                .foregroundColor(Theme.ink)
                 .accessibilityAddTraits(.isHeader)
             Spacer()
             Button(action: onClose) {
-                Text(trailingTitle.uppercased())
-                    .font(Theme.sans(10.5, weight: .semibold))
-                    .kerning(1.6)
+                Text(trailingTitle)
+                    .font(Theme.sans(15, weight: .semibold))
                     .foregroundColor(trailingIsAccent ? Theme.accent : Theme.ink)
                     .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
                     .contentShape(Rectangle())
@@ -221,8 +275,8 @@ struct SheetBar: View {
             .accessibilityLabel(trailingTitle)
         }
         .padding(.horizontal, Theme.gutter)
-        .padding(.top, 12)
-        .padding(.bottom, 10)
+        .padding(.top, 14)
+        .padding(.bottom, 12)
     }
 }
 

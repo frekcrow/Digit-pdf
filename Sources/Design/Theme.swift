@@ -3,50 +3,53 @@ import UIKit
 
 /// The single source of truth for TrollDocs' visual language.
 ///
-/// The palette is borrowed from a printed page: warm ivory stock, dense ink,
-/// a single oxblood accent. Nothing else is allowed in.
+/// Redesigned to Modern Cupertino Pro: Apple Human Interface Guidelines,
+/// native system materials (.ultraThinMaterial), semantic dynamic colors,
+/// and San Francisco typography.
 enum Theme {
 
-    // MARK: - Colours
+    // MARK: - Colours (Cupertino System Semantic)
 
     static let paperUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x12100C) : UIColor(hex: 0xFAF6EC)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x000000) : UIColor(hex: 0xF2F2F7)
     }
 
     static let sheetUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x1B1813) : UIColor(hex: 0xFFFFFF)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x1C1C1E) : UIColor(hex: 0xFFFFFF)
     }
 
     static let deskUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x0A0906) : UIColor(hex: 0xE7E1D3)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x121214) : UIColor(hex: 0xE5E5EA)
     }
 
     static let inkUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0xF2EBDB) : UIColor(hex: 0x1B1712)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0xFFFFFF) : UIColor(hex: 0x1C1C1E)
     }
 
     static let inkSecondaryUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0xA9A08E) : UIColor(hex: 0x6C6455)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8E8E93) : UIColor(hex: 0x6C6C70)
     }
 
     static let inkTertiaryUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x6E6556) : UIColor(hex: 0xA09683)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x636366) : UIColor(hex: 0xAEAEB2)
     }
 
     static let ruleUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x322C22) : UIColor(hex: 0xE1D8C5)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x38383A) : UIColor(hex: 0xE5E5EA)
     }
 
     static let ruleStrongUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x4B4334) : UIColor(hex: 0xC7BCA5)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x48484A) : UIColor(hex: 0xD1D1D6)
     }
 
     static let accentUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0xCE8E80) : UIColor(hex: 0x7B2E29)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x0A84FF) : UIColor(hex: 0x007AFF)
     }
 
     static let accentWashUIColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x2B1D19) : UIColor(hex: 0xF1E4DB)
+        traits.userInterfaceStyle == .dark
+            ? UIColor(hex: 0x0A84FF).withAlphaComponent(0.18)
+            : UIColor(hex: 0x007AFF).withAlphaComponent(0.12)
     }
 
     static var paper: Color { Color(uiColor: paperUIColor) }
@@ -60,30 +63,32 @@ enum Theme {
     static var accent: Color { Color(uiColor: accentUIColor) }
     static var accentWash: Color { Color(uiColor: accentWashUIColor) }
 
-    // MARK: - Type
+    // MARK: - Type (San Francisco Pro & New York)
 
-    /// New York, the serif companion to San Francisco. Used for titles,
-    /// document names and anything that should read like print.
-    static func serif(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .system(size: size, weight: weight, design: .serif)
-    }
-
-    /// San Francisco for labels, controls and running text in the chrome.
+    /// San Francisco, the native voice of iOS.
     static func sans(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         .system(size: size, weight: weight, design: .default)
     }
 
-    /// Reserved for folios, measurements and catalogue numbers.
+    /// New York serif, used for typeset publication reading & editorial body text.
+    static func serif(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight, design: .serif)
+    }
+
+    /// SF Monospaced for page numbers, tabular measures, and coordinates.
     static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         .system(size: size, weight: weight, design: .monospaced)
     }
 
-    // MARK: - Measure
+    // MARK: - Cupertino Metrics & Shapes
 
     static var hairline: CGFloat { 1.0 / max(UIScreen.main.scale, 1) }
 
-    static let gutter: CGFloat = 22
-    static let rowVerticalPadding: CGFloat = 14
+    static let gutter: CGFloat = 16
+    static let rowVerticalPadding: CGFloat = 12
+    static let cardCornerRadius: CGFloat = 16
+    static let buttonCornerRadius: CGFloat = 12
+    static let chipCornerRadius: CGFloat = 8
 }
 
 extension UIColor {

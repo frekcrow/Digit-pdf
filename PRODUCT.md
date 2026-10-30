@@ -30,7 +30,7 @@ Unlike generic mobile PDF utilities or subscription-locked office suites, TrollD
 
 ## Brand Commitments
 - **Name**: TrollDocs / TrollDocs PDF
-- **Aesthetic**: Editorial book-craft visual language inspired by printed paper, dense ink, and oxblood accent (`#7B2E29` / `#CE8E80`), paired with New York serif, San Francisco default, and monospace measures.
+- **Aesthetic**: Modern Cupertino Pro visual language built on native Apple Human Interface Guidelines, continuous squircle geometry, system materials, semantic dynamic color tokens, and San Francisco typography with vibrant Cupertino Blue (`#007AFF` / `#0A84FF`) accents.
 - **Privacy & Sovereignty**: Zero cloud dependencies, zero external tracking, 100% on-device operation.
 
 ## Evidence on Hand

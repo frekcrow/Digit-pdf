@@ -12,7 +12,7 @@ struct InspectorView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Page & Type")
-                            .font(Theme.serif(30))
+                            .font(Theme.sans(28, weight: .bold))
                             .foregroundColor(Theme.ink)
                         Text("The measures below decide how the document looks on paper, not on this screen.")
                             .font(Theme.sans(12))

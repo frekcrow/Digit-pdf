@@ -23,14 +23,84 @@ struct LibraryView: View {
     }
 
     var body: some View {
-        ZStack {
-            Theme.paper.ignoresSafeArea()
+        NavigationView {
+            ZStack {
+                Theme.paper.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                masthead
-                content
+                VStack(spacing: 0) {
+                    if showingSearch {
+                        searchField
+                            .padding(.horizontal, Theme.gutter)
+                            .padding(.top, 8)
+                            .padding(.bottom, 6)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    content
+                }
+            }
+            .navigationTitle("Documents")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        Picker("Appearance", selection: $appearanceRaw) {
+                            ForEach(AppAppearance.allCases) { item in
+                                Label(item.title, systemImage: item.iconName)
+                                    .tag(item.rawValue)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: currentAppearance.iconName)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Theme.accent)
+                            .frame(width: 36, height: 36)
+                            .background(Color(uiColor: .tertiarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("Appearance theme: \(currentAppearance.title)")
+                }
+
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        toggleSearch()
+                    } label: {
+                        Image(systemName: showingSearch ? "xmark.circle.fill" : "magnifyingglass")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(showingSearch ? Theme.inkSecondary : Theme.accent)
+                            .frame(width: 36, height: 36)
+                            .background(Color(uiColor: .tertiarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel(showingSearch ? "Close search" : "Search documents")
+
+                    Button {
+                        showingImportPicker = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Theme.accent)
+                            .frame(width: 36, height: 36)
+                            .background(Color(uiColor: .tertiarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("Import PDF document")
+
+                    Button {
+                        createNewPDFDocument()
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(Theme.accent)
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("Create new PDF document")
+                }
             }
         }
+        .navigationViewStyle(.stack)
         .sheet(isPresented: $showingImportPicker) {
             DocumentPickerView { pickedURL in
                 importFile(from: pickedURL)
@@ -83,159 +153,36 @@ struct LibraryView: View {
         .preferredColorScheme(currentAppearance.colorScheme)
     }
 
-    // MARK: - Masthead
-
-    private var masthead: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 10) {
-                Text("TROLLDOCS PDF")
-                    .font(Theme.mono(9.5, weight: .bold))
-                    .kerning(2.6)
-                    .foregroundColor(Theme.accent)
-
-                Spacer()
-
-                Menu {
-                    Picker("Appearance", selection: $appearanceRaw) {
-                        ForEach(AppAppearance.allCases) { item in
-                            Label(item.title, systemImage: item.iconName)
-                                .tag(item.rawValue)
-                        }
-                    }
-                } label: {
-                    Image(systemName: currentAppearance.iconName)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Theme.inkSecondary)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(QuietButtonStyle())
-                .accessibilityLabel("Appearance theme: \(currentAppearance.title)")
-
-                Button {
-                    toggleSearch()
-                } label: {
-                    Image(systemName: showingSearch ? "xmark" : "magnifyingglass")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Theme.inkSecondary)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(QuietButtonStyle())
-                .accessibilityLabel(showingSearch ? "Close search" : "Search documents")
-
-                Button {
-                    showingImportPicker = true
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "square.and.arrow.down")
-                            .font(.system(size: 9.5, weight: .semibold))
-                        Text("IMPORT")
-                            .font(Theme.sans(9.5, weight: .semibold))
-                            .kerning(1.6)
-                    }
-                    .foregroundColor(Theme.inkSecondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .overlay(
-                        Rectangle().stroke(Theme.ruleStrong, lineWidth: Theme.hairline)
-                    )
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(QuietButtonStyle())
-                .accessibilityLabel("Import PDF document")
-
-                Button {
-                    createNewPDFDocument()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 9.5, weight: .semibold))
-                        Text("NEW PDF")
-                            .font(Theme.sans(9.5, weight: .semibold))
-                            .kerning(1.6)
-                    }
-                    .foregroundColor(Theme.accent)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
-                    .overlay(
-                        Rectangle().stroke(Theme.ruleStrong, lineWidth: Theme.hairline)
-                    )
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(QuietButtonStyle())
-                .accessibilityLabel("Create new PDF document")
-            }
-            .padding(.top, 8)
-
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text("PDF Documents")
-                    .font(Theme.serif(34))
-                    .foregroundColor(Theme.ink)
-                Text("\(store.documents.count)")
-                    .font(Theme.serif(14))
-                    .italic()
-                    .foregroundColor(Theme.inkTertiary)
-                Spacer()
-            }
-            .padding(.top, 4)
-
-            Text(summaryLine)
-                .font(Theme.mono(8.5))
-                .kerning(1.3)
-                .foregroundColor(Theme.inkTertiary)
-                .padding(.top, 4)
-
-            if showingSearch {
-                searchField
-                    .padding(.top, 14)
-            }
-
-            Hairline(color: Theme.ruleStrong)
-                .padding(.top, 14)
-        }
-        .padding(.horizontal, Theme.gutter)
-    }
-
-    private var summaryLine: String {
-        let documents = store.documents.count
-        if documents == 0 { return "NO PDF DOCUMENTS YET" }
-        let words = store.totalWordCount
-        return "\(documents) \(documents == 1 ? "DOCUMENT" : "DOCUMENTS") • \(words) WORDS TOTAL"
-    }
+    // MARK: - Search Field
 
     private var searchField: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 9) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(Theme.inkTertiary)
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 15))
+                .foregroundColor(Theme.inkSecondary)
 
-                TextField("Search titles and authors...", text: $searchText)
-                    .font(Theme.serif(15))
-                    .foregroundColor(Theme.ink)
-                    .textInputAutocapitalization(.never)
-                    .disableAutocorrection(true)
-                    .focused($searchFocused)
+            TextField("Search titles and authors...", text: $searchText)
+                .font(Theme.sans(15))
+                .foregroundColor(Theme.ink)
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .focused($searchFocused)
 
-                if !searchText.isEmpty {
-                    Button {
-                        searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(Theme.inkTertiary)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(QuietButtonStyle())
-                    .accessibilityLabel("Clear search text")
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 15))
+                        .foregroundColor(Theme.inkSecondary)
                 }
+                .accessibilityLabel("Clear search text")
             }
-            Hairline(color: Theme.ruleStrong)
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(uiColor: .tertiarySystemFill))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     // MARK: - Content
@@ -296,8 +243,8 @@ struct LibraryView: View {
                             DocumentRow(document: document)
                         }
                         .buttonStyle(QuietButtonStyle())
-                        .listRowInsets(EdgeInsets(top: 0, leading: Theme.gutter, bottom: 0, trailing: Theme.gutter))
-                        .listRowBackground(Theme.paper)
+                        .listRowInsets(EdgeInsets(top: 6, leading: Theme.gutter, bottom: 6, trailing: Theme.gutter))
+                        .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
@@ -370,14 +317,13 @@ struct LibraryView: View {
     private func sectionHeader(_ title: String) -> some View {
         HStack {
             Text(title.uppercased())
-                .font(Theme.mono(8.5, weight: .bold))
-                .kerning(1.4)
-                .foregroundColor(Theme.inkTertiary)
+                .font(Theme.sans(11, weight: .bold))
+                .foregroundColor(Theme.inkSecondary)
             Spacer()
         }
         .padding(.horizontal, Theme.gutter)
-        .padding(.top, 18)
-        .padding(.bottom, 6)
+        .padding(.top, 14)
+        .padding(.bottom, 4)
         .background(Theme.paper)
     }
 
@@ -389,45 +335,56 @@ struct LibraryView: View {
 
             VStack(spacing: 16) {
                 ZStack {
-                    Circle()
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .fill(Theme.accentWash)
-                        .frame(width: 80, height: 80)
+                        .frame(width: 88, height: 88)
 
-                    Image(systemName: "doc.richtext")
-                        .font(.system(size: 36, weight: .light))
+                    Image(systemName: "doc.viewfinder.fill")
+                        .font(.system(size: 40))
                         .foregroundColor(Theme.accent)
                 }
 
                 Text("No PDF Documents")
-                    .font(Theme.serif(28))
+                    .font(Theme.sans(24, weight: .bold))
                     .foregroundColor(Theme.ink)
 
                 Text("Create a new typeset PDF with desktop typography, or import existing PDF files to read and annotate.")
-                    .font(Theme.sans(13))
+                    .font(Theme.sans(14))
                     .foregroundColor(Theme.inkSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .padding(.horizontal, 30)
+                    .lineSpacing(3)
+                    .padding(.horizontal, 36)
 
-                Button {
-                    createNewPDFDocument()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "plus")
-                        Text("Create First PDF")
-                            .kerning(1.4)
+                VStack(spacing: 12) {
+                    Button {
+                        createNewPDFDocument()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus")
+                            Text("New PDF Document")
+                        }
+                        .font(Theme.sans(14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: 240)
+                        .padding(.vertical, 14)
+                        .background(Theme.accent)
+                        .clipShape(Capsule())
                     }
-                    .font(Theme.sans(11, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 22)
-                    .padding(.vertical, 12)
-                    .background(Theme.accent)
-                    .clipShape(Capsule())
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
+                    .accessibilityLabel("Create new PDF document")
+
+                    Button {
+                        showingImportPicker = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "square.and.arrow.down")
+                            Text("Import Existing PDF")
+                        }
+                        .font(Theme.sans(13.5, weight: .medium))
+                        .foregroundColor(Theme.accent)
+                    }
+                    .accessibilityLabel("Import existing PDF")
                 }
-                .accessibilityLabel("Create first PDF")
-                .padding(.top, 8)
+                .padding(.top, 10)
             }
 
             Spacer()
@@ -440,31 +397,37 @@ struct LibraryView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            Text("Nothing matches.")
-                .font(Theme.serif(24))
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 38, weight: .light))
+                .foregroundColor(Theme.inkTertiary)
+                .padding(.bottom, 6)
+
+            Text("No Results Found")
+                .font(Theme.sans(20, weight: .bold))
                 .foregroundColor(Theme.ink)
 
-            Text("Try another title or author, or clear the search to see all documents.")
-                .font(Theme.sans(12.5))
+            Text("No documents match '\(searchText)'. Try another search term or clear the filter.")
+                .font(Theme.sans(13.5))
                 .foregroundColor(Theme.inkSecondary)
                 .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .padding(.top, 10)
-                .padding(.horizontal, 30)
+                .padding(.top, 6)
+                .padding(.horizontal, 36)
 
             Button {
                 searchText = ""
             } label: {
                 Text("Clear Search")
-                    .font(Theme.sans(10, weight: .semibold))
-                    .kerning(1.6)
-                    .foregroundColor(Theme.ink)
+                    .font(Theme.sans(13, weight: .semibold))
+                    .foregroundColor(Theme.accent)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Theme.accentWash)
+                    .clipShape(Capsule())
                     .frame(minHeight: 44)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(InkButtonStyle(filled: false))
             .accessibilityLabel("Clear search")
-            .padding(.top, 22)
+            .padding(.top, 16)
 
             Spacer()
         }
@@ -537,52 +500,56 @@ struct DocumentRow: View {
 
     private var metaLine: String {
         let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
+        formatter.unitsStyle = .abbreviated
         let edited = formatter.localizedString(for: document.updatedAt, relativeTo: Date())
 
-        return "\(document.measureDescription) / \(edited)"
+        return "\(document.measureDescription) • \(edited)"
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(alignment: .top, spacing: 15) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("PDF")
-                        .font(Theme.mono(8.5, weight: .bold))
-                        .kerning(1.3)
-                        .foregroundColor(Theme.accent)
-                    Rectangle()
-                        .fill(Theme.accent)
-                        .frame(width: 18, height: 1)
-                }
-                .frame(width: 38, alignment: .leading)
-                .padding(.top, 5)
+        HStack(spacing: 14) {
+            // Document icon badge
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Theme.accentWash)
+                    .frame(width: 44, height: 44)
 
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(document.displayTitle)
-                        .font(Theme.serif(18))
-                        .foregroundColor(Theme.ink)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
+                Image(systemName: "doc.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(Theme.accent)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(document.displayTitle)
+                    .font(Theme.sans(16, weight: .semibold))
+                    .foregroundColor(Theme.ink)
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    CupertinoBadge(text: "PDF")
 
                     Text(metaLine)
-                        .font(Theme.mono(8.5))
-                        .kerning(0.4)
-                        .foregroundColor(Theme.inkTertiary)
+                        .font(Theme.sans(12))
+                        .foregroundColor(Theme.inkSecondary)
                         .lineLimit(1)
                 }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(Theme.inkTertiary)
-                    .padding(.top, 7)
             }
-            .padding(.vertical, 15)
 
-            Hairline()
+            Spacer(minLength: 8)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(Theme.inkTertiary)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(Theme.sheet)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)
+                .stroke(Theme.rule, lineWidth: Theme.hairline)
+        )
+        .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(document.displayTitle), PDF document, \(metaLine)")

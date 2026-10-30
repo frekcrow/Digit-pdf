@@ -75,30 +75,26 @@ struct EditorView: View {
 
     private var topBar: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Button {
                     dismiss()
                 } label: {
-                    HStack(spacing: 5) {
+                    HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 11, weight: .semibold))
-                        Text("Library")
-                            .font(Theme.sans(12))
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("Documents")
+                            .font(Theme.sans(15, weight: .medium))
                     }
-                    .foregroundColor(Theme.inkSecondary)
+                    .foregroundColor(Theme.accent)
                     .frame(minWidth: 44, minHeight: 44, alignment: .leading)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(QuietButtonStyle())
-                .accessibilityLabel("Back to Library")
+                .accessibilityLabel("Back to Documents")
 
                 Spacer()
 
-                Text("PDF")
-                    .font(Theme.mono(8.5, weight: .semibold))
-                    .kerning(1.7)
-                    .foregroundColor(Theme.accent)
-                    .accessibilityLabel("PDF format")
+                CupertinoBadge(text: "PDF")
 
                 Spacer()
 
@@ -106,10 +102,11 @@ struct EditorView: View {
                     openPreview()
                 } label: {
                     Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundColor(Theme.inkSecondary)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                        .font(.system(size: 15))
+                        .foregroundColor(Theme.accent)
+                        .frame(width: 36, height: 36)
+                        .background(Color(uiColor: .tertiarySystemFill))
+                        .clipShape(Circle())
                 }
                 .buttonStyle(QuietButtonStyle())
                 .accessibilityLabel("Preview PDF pages")
@@ -117,10 +114,10 @@ struct EditorView: View {
                 menu
             }
             .padding(.horizontal, Theme.gutter)
-            .padding(.vertical, 4)
-            .background(Theme.paper)
+            .padding(.vertical, 6)
+            .background(Theme.sheet)
 
-            Hairline()
+            Divider().background(Theme.rule)
         }
     }
 
@@ -206,10 +203,11 @@ struct EditorView: View {
             }
         } label: {
             Image(systemName: "ellipsis")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(Theme.inkSecondary)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(Theme.accent)
+                .frame(width: 36, height: 36)
+                .background(Color(uiColor: .tertiarySystemFill))
+                .clipShape(Circle())
         }
         .accessibilityLabel("Document actions and export menu")
     }
@@ -254,11 +252,13 @@ struct EditorView: View {
                 .padding(.top, 22)
                 .padding(.bottom, 14)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(Theme.sheet)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
-                    Rectangle().stroke(Theme.rule.opacity(0.9), lineWidth: Theme.hairline)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Theme.rule, lineWidth: Theme.hairline)
                 )
-                .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
+                .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
                 .frame(width: min(proxy.size.width, 704))
@@ -269,32 +269,31 @@ struct EditorView: View {
     }
 
     private var headerFields: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             TextField("Untitled Document", text: $model.document.title)
-                .font(Theme.serif(28))
+                .font(Theme.sans(26, weight: .bold))
                 .foregroundColor(Theme.ink)
                 .textFieldStyle(PlainTextFieldStyle())
                 .disableAutocorrection(true)
                 .focused($titleFocused)
 
             TextField("Subtitle or Author", text: $model.document.subtitle)
-                .font(Theme.serif(13).italic())
+                .font(Theme.sans(14, weight: .medium))
                 .foregroundColor(Theme.inkSecondary)
                 .textFieldStyle(PlainTextFieldStyle())
                 .disableAutocorrection(true)
-                .padding(.top, 1)
 
-            Hairline(color: Theme.ruleStrong)
-                .padding(.top, 12)
+            Divider().background(Theme.rule)
+                .padding(.top, 8)
         }
-        .padding(.bottom, 14)
+        .padding(.bottom, 12)
     }
 
     // MARK: - Bottom bar
 
     private var bottomBar: some View {
         VStack(spacing: 0) {
-            Hairline()
+            Divider().background(Theme.rule)
 
             richToolRow
 
@@ -303,15 +302,13 @@ struct EditorView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text(metricsLine)
-                        .font(Theme.mono(8.5))
-                        .kerning(1.1)
-                        .foregroundColor(Theme.inkTertiary)
+                        .font(Theme.sans(11.5, weight: .medium))
+                        .foregroundColor(Theme.inkSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Spacer(minLength: 8)
                     Text("PAGE SETUP")
-                        .font(Theme.sans(9, weight: .semibold))
-                        .kerning(1.4)
+                        .font(Theme.sans(11, weight: .bold))
                         .foregroundColor(Theme.accent)
                 }
                 .padding(.horizontal, Theme.gutter)
@@ -322,7 +319,7 @@ struct EditorView: View {
             .accessibilityLabel("Page setup: \(metricsLine)")
             .accessibilityHint("Double tap to open page and typography inspector")
         }
-        .background(Theme.paper)
+        .background(Theme.sheet)
     }
 
     private var richToolRow: some View {

@@ -142,11 +142,11 @@ struct PDFStudioView: View {
             Button(action: { dismiss() }) {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 11, weight: .semibold))
-                    Text("Done")
-                        .font(Theme.sans(12))
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("Documents")
+                        .font(Theme.sans(15, weight: .medium))
                 }
-                .foregroundColor(Theme.inkSecondary)
+                .foregroundColor(Theme.accent)
                 .frame(minWidth: 44, minHeight: 44, alignment: .leading)
                 .contentShape(Rectangle())
             }
@@ -155,7 +155,7 @@ struct PDFStudioView: View {
             Spacer()
 
             Text(documentURL.lastPathComponent)
-                .font(Theme.mono(10.5, weight: .bold))
+                .font(Theme.sans(15, weight: .semibold))
                 .foregroundColor(Theme.ink)
                 .lineLimit(1)
                 .accessibilityAddTraits(.isHeader)
@@ -165,10 +165,11 @@ struct PDFStudioView: View {
             // Page Organizer Toggle
             Button(action: { isShowingPageOrganizer = true }) {
                 Image(systemName: "square.grid.2x2")
-                    .font(.system(size: 14))
-                    .foregroundColor(Theme.inkSecondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                    .font(.system(size: 15))
+                    .foregroundColor(Theme.accent)
+                    .frame(width: 36, height: 36)
+                    .background(Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .accessibilityLabel("Page Organizer")
             .accessibilityHint("Manage, rotate, reorder, or delete pages")
@@ -176,10 +177,11 @@ struct PDFStudioView: View {
             // Markup Toolbar Toggle
             Button(action: { withAnimation { isShowingMarkupToolbar.toggle() } }) {
                 Image(systemName: "pencil.tip.crop.circle")
-                    .font(.system(size: 15))
-                    .foregroundColor(isShowingMarkupToolbar ? Theme.accent : Theme.inkSecondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                    .font(.system(size: 16))
+                    .foregroundColor(isShowingMarkupToolbar ? .white : Theme.accent)
+                    .frame(width: 36, height: 36)
+                    .background(isShowingMarkupToolbar ? Theme.accent : Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .accessibilityLabel("Markup toolbar")
             .accessibilityAddTraits(isShowingMarkupToolbar ? .isSelected : [])
@@ -187,10 +189,11 @@ struct PDFStudioView: View {
             // Search Toggle
             Button(action: { withAnimation { isShowingSearch.toggle() } }) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 14))
-                    .foregroundColor(isShowingSearch ? Theme.accent : Theme.inkSecondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                    .font(.system(size: 15))
+                    .foregroundColor(isShowingSearch ? .white : Theme.accent)
+                    .frame(width: 36, height: 36)
+                    .background(isShowingSearch ? Theme.accent : Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .accessibilityLabel("Search in PDF")
             .accessibilityAddTraits(isShowingSearch ? .isSelected : [])
@@ -218,11 +221,12 @@ struct PDFStudioView: View {
                     }
                 }
             } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.system(size: 15))
-                    .foregroundColor(Theme.inkSecondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(Theme.accent)
+                    .frame(width: 36, height: 36)
+                    .background(Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .accessibilityLabel("More document actions and export")
         }
@@ -231,19 +235,19 @@ struct PDFStudioView: View {
     // MARK: - Markup Toolbar
 
     private var markupToolbarView: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             // Draw on Page
             Button(action: { isShowingDrawingCanvas = true }) {
                 HStack(spacing: 4) {
                     Image(systemName: "pencil")
                     Text("Draw")
                 }
-                .font(Theme.sans(11, weight: .medium))
+                .font(Theme.sans(12, weight: .semibold))
                 .foregroundColor(Theme.accent)
-                .padding(.horizontal, 9)
-                .padding(.vertical, 5)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(Theme.accentWash)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(Capsule())
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())
             }
@@ -255,7 +259,7 @@ struct PDFStudioView: View {
                     Image(systemName: "character.textbox")
                     Text("Text")
                 }
-                .font(Theme.sans(11, weight: .medium))
+                .font(Theme.sans(12, weight: .medium))
                 .foregroundColor(Theme.ink)
                 .padding(.horizontal, 8)
                 .frame(minHeight: 44)
@@ -269,7 +273,7 @@ struct PDFStudioView: View {
                     Image(systemName: "signature")
                     Text("Sign")
                 }
-                .font(Theme.sans(11, weight: .medium))
+                .font(Theme.sans(12, weight: .medium))
                 .foregroundColor(Theme.ink)
                 .padding(.horizontal, 8)
                 .frame(minHeight: 44)
@@ -282,8 +286,8 @@ struct PDFStudioView: View {
             // Text Selection Markup
             Button(action: applyHighlight) {
                 Image(systemName: "highlighter")
-                    .font(.system(size: 12))
-                    .foregroundColor(Theme.inkSecondary)
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.accent)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
@@ -291,7 +295,7 @@ struct PDFStudioView: View {
 
             Button(action: applyStrikeout) {
                 Image(systemName: "strikethrough")
-                    .font(.system(size: 12))
+                    .font(.system(size: 14))
                     .foregroundColor(Theme.inkSecondary)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
@@ -300,7 +304,7 @@ struct PDFStudioView: View {
 
             Button(action: applyUnderline) {
                 Image(systemName: "underline")
-                    .font(.system(size: 12))
+                    .font(.system(size: 14))
                     .foregroundColor(Theme.inkSecondary)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
@@ -312,7 +316,7 @@ struct PDFStudioView: View {
             // Undo Last Annotation
             Button(action: undoLastAnnotation) {
                 Image(systemName: "arrow.uturn.backward")
-                    .font(.system(size: 12))
+                    .font(.system(size: 14))
                     .foregroundColor(Theme.inkSecondary)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
@@ -324,48 +328,59 @@ struct PDFStudioView: View {
     // MARK: - Search Bar
 
     private var searchBarView: some View {
-        HStack(spacing: 6) {
-            TextField("Find in PDF...", text: $searchQuery)
-                .font(Theme.sans(12))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 7)
-                .background(Theme.desk)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .onSubmit {
-                    performSearch()
-                }
+        HStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.inkSecondary)
+
+                TextField("Find in PDF...", text: $searchQuery)
+                    .font(Theme.sans(14))
+                    .onSubmit {
+                        performSearch()
+                    }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Color(uiColor: .tertiarySystemFill))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
             if !searchResults.isEmpty {
                 Text("\(currentMatchIndex + 1) of \(searchResults.count)")
-                    .font(Theme.mono(10))
+                    .font(Theme.mono(11))
                     .foregroundColor(Theme.inkSecondary)
 
                 Button(action: previousMatch) {
                     Image(systemName: "chevron.up")
-                        .font(.system(size: 12))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Theme.accent)
+                        .frame(width: 36, height: 36)
+                        .background(Color(uiColor: .tertiarySystemFill))
+                        .clipShape(Circle())
                 }
                 .accessibilityLabel("Previous match")
 
                 Button(action: nextMatch) {
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 12))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Theme.accent)
+                        .frame(width: 36, height: 36)
+                        .background(Color(uiColor: .tertiarySystemFill))
+                        .clipShape(Circle())
                 }
                 .accessibilityLabel("Next match")
             } else if !searchQuery.isEmpty {
                 Text("No matches")
-                    .font(Theme.mono(10))
+                    .font(Theme.mono(11))
                     .foregroundColor(Theme.inkTertiary)
             }
 
             Button(action: performSearch) {
                 Text("Find")
-                    .font(Theme.sans(11, weight: .semibold))
+                    .font(Theme.sans(14, weight: .semibold))
                     .foregroundColor(Theme.accent)
-                    .frame(minWidth: 44, minHeight: 44)
+                    .padding(.horizontal, 10)
+                    .frame(minHeight: 44)
                     .contentShape(Rectangle())
             }
             .accessibilityLabel("Search")
@@ -375,27 +390,29 @@ struct PDFStudioView: View {
     // MARK: - Bottom Scrubber Bar
 
     private var bottomBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             Button(action: goToPreviousPage) {
                 Image(systemName: "chevron.backward")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(currentPage > 1 ? Theme.ink : Theme.inkTertiary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(currentPage > 1 ? Theme.accent : Theme.inkTertiary.opacity(0.4))
+                    .frame(width: 36, height: 36)
+                    .background(Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .disabled(currentPage <= 1)
             .accessibilityLabel("Previous page")
 
             Text("Page \(currentPage) of \(totalPages)")
-                .font(Theme.mono(11, weight: .bold))
+                .font(Theme.sans(13, weight: .semibold))
                 .foregroundColor(Theme.ink)
 
             Button(action: goToNextPage) {
                 Image(systemName: "chevron.forward")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(currentPage < totalPages ? Theme.ink : Theme.inkTertiary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(currentPage < totalPages ? Theme.accent : Theme.inkTertiary.opacity(0.4))
+                    .frame(width: 36, height: 36)
+                    .background(Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .disabled(currentPage >= totalPages)
             .accessibilityLabel("Next page")
@@ -404,19 +421,21 @@ struct PDFStudioView: View {
 
             Button(action: zoomIn) {
                 Image(systemName: "plus.magnifyingglass")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14))
                     .foregroundColor(Theme.inkSecondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                    .frame(width: 36, height: 36)
+                    .background(Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .accessibilityLabel("Zoom in")
 
             Button(action: zoomOut) {
                 Image(systemName: "minus.magnifyingglass")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14))
                     .foregroundColor(Theme.inkSecondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                    .frame(width: 36, height: 36)
+                    .background(Color(uiColor: .tertiarySystemFill))
+                    .clipShape(Circle())
             }
             .accessibilityLabel("Zoom out")
         }
