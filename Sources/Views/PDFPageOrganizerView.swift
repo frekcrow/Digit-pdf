@@ -75,100 +75,98 @@ struct PDFPageOrganizerView: View {
 
     @ViewBuilder
     private func pageCard(at index: Int) -> some View {
-        guard let doc = workingDoc, index < doc.pageCount, let page = doc.page(at: index) else {
-            EmptyView()
-        }
+        if let doc = workingDoc, index < doc.pageCount, let page = doc.page(at: index) {
+            VStack(spacing: 8) {
+                // Thumbnail
+                ZStack {
+                    Theme.sheet
 
-        VStack(spacing: 8) {
-            // Thumbnail
-            ZStack {
-                Theme.sheet
-
-                if index < pageThumbnails.count {
-                    Image(uiImage: pageThumbnails[index])
-                        .resizable()
-                        .scaledToFit()
-                        .rotationEffect(.degrees(Double(page.rotation)))
-                } else {
-                    ProgressView()
+                    if index < pageThumbnails.count {
+                        Image(uiImage: pageThumbnails[index])
+                            .resizable()
+                            .scaledToFit()
+                            .rotationEffect(.degrees(Double(page.rotation)))
+                    } else {
+                        ProgressView()
+                    }
                 }
+                .frame(height: 190)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Theme.ruleStrong, lineWidth: Theme.hairline)
+                )
+                .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
+
+                // Page label and controls
+                HStack(spacing: 6) {
+                    Text("\(index + 1)")
+                        .font(Theme.mono(11, weight: .bold))
+                        .foregroundColor(Theme.ink)
+
+                    Spacer()
+
+                    // Move left
+                    Button {
+                        movePage(from: index, to: index - 1)
+                    } label: {
+                        Image(systemName: "arrow.left")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(index > 0 ? Theme.inkSecondary : Theme.inkTertiary.opacity(0.4))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .disabled(index <= 0)
+                    .accessibilityLabel("Move page \(index + 1) left")
+
+                    // Move right
+                    Button {
+                        movePage(from: index, to: index + 1)
+                    } label: {
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(index < doc.pageCount - 1 ? Theme.inkSecondary : Theme.inkTertiary.opacity(0.4))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .disabled(index >= doc.pageCount - 1)
+                    .accessibilityLabel("Move page \(index + 1) right")
+
+                    // Rotate 90
+                    Button {
+                        rotatePage(at: index)
+                    } label: {
+                        Image(systemName: "rotate.right")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Theme.accent)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Rotate page \(index + 1) 90 degrees")
+
+                    // Delete
+                    Button {
+                        deletePage(at: index)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(doc.pageCount > 1 ? Theme.accent : Theme.inkTertiary.opacity(0.4))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .disabled(doc.pageCount <= 1)
+                    .accessibilityLabel("Delete page \(index + 1)")
+                }
+                .padding(.horizontal, 2)
             }
-            .frame(height: 190)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .padding(8)
+            .background(Theme.sheet)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Theme.ruleStrong, lineWidth: Theme.hairline)
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Theme.rule, lineWidth: Theme.hairline)
             )
-            .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
-
-            // Page label and controls
-            HStack(spacing: 6) {
-                Text("\(index + 1)")
-                    .font(Theme.mono(11, weight: .bold))
-                    .foregroundColor(Theme.ink)
-
-                Spacer()
-
-                // Move left
-                Button {
-                    movePage(from: index, to: index - 1)
-                } label: {
-                    Image(systemName: "arrow.left")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(index > 0 ? Theme.inkSecondary : Theme.inkTertiary.opacity(0.4))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .disabled(index <= 0)
-                .accessibilityLabel("Move page \(index + 1) left")
-
-                // Move right
-                Button {
-                    movePage(from: index, to: index + 1)
-                } label: {
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(index < doc.pageCount - 1 ? Theme.inkSecondary : Theme.inkTertiary.opacity(0.4))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .disabled(index >= doc.pageCount - 1)
-                .accessibilityLabel("Move page \(index + 1) right")
-
-                // Rotate 90
-                Button {
-                    rotatePage(at: index)
-                } label: {
-                    Image(systemName: "rotate.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Theme.accent)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .accessibilityLabel("Rotate page \(index + 1) 90 degrees")
-
-                // Delete
-                Button {
-                    deletePage(at: index)
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(doc.pageCount > 1 ? Theme.accent : Theme.inkTertiary.opacity(0.4))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .disabled(doc.pageCount <= 1)
-                .accessibilityLabel("Delete page \(index + 1)")
-            }
-            .padding(.horizontal, 2)
         }
-        .padding(8)
-        .background(Theme.sheet)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Theme.rule, lineWidth: Theme.hairline)
-        )
     }
 
     // MARK: - Bottom Toolbar

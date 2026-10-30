@@ -118,7 +118,6 @@ struct PageMarkupCanvasView: View {
             return
         }
 
-        let pageBounds = page.bounds(for: .mediaBox)
         let drawingImage = drawing.image(from: canvasView.bounds, scale: UIScreen.main.scale)
 
         PDFAnnotationHelper.addSignature(to: page, image: drawingImage, at: CGPoint(x: 0, y: 0))
