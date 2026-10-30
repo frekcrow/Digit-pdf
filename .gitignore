@@ -28,3 +28,6 @@ Payload/
 *.ipa
 *.tipa
 *.zip
+
+# Impeccable
+.impeccable/config.local.json
